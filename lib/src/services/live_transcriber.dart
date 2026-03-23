@@ -37,6 +37,7 @@ class LiveTranscriber {
   Future<void> start({
     required String whisperPath,
     required String modelPath,
+    required List<String> extraArgs,
     required LiveDictationProfile profile,
     required void Function(String text) onSegment,
     required void Function(String status) onStatus,
@@ -80,6 +81,7 @@ class LiveTranscriber {
           List<int>.from(_pcmBuffer),
           whisperPath: whisperPath,
           modelPath: modelPath,
+          extraArgs: extraArgs,
           language: profile.language,
           onSegment: onSegment,
           onStatus: onStatus,
@@ -92,6 +94,7 @@ class LiveTranscriber {
     required String whisperPath,
     required String modelPath,
     required String language,
+    required List<String> extraArgs,
     required void Function(String text) onSegment,
     required void Function(String status) onStatus,
   }) async {
@@ -113,6 +116,7 @@ class LiveTranscriber {
         finalSnapshot,
         whisperPath: whisperPath,
         modelPath: modelPath,
+        extraArgs: extraArgs,
         language: language,
         onSegment: onSegment,
         onStatus: onStatus,
@@ -137,6 +141,7 @@ class LiveTranscriber {
     List<int> snapshot, {
     required String whisperPath,
     required String modelPath,
+    required List<String> extraArgs,
     required String language,
     required void Function(String text) onSegment,
     required void Function(String status) onStatus,
@@ -153,6 +158,7 @@ class LiveTranscriber {
         snapshot,
         whisperPath: whisperPath,
         modelPath: modelPath,
+        extraArgs: extraArgs,
         language: language,
         onSegment: onSegment,
         onStatus: onStatus,
@@ -164,6 +170,7 @@ class LiveTranscriber {
     List<int> snapshot, {
     required String whisperPath,
     required String modelPath,
+    required List<String> extraArgs,
     required String language,
     required void Function(String text) onSegment,
     required void Function(String status) onStatus,
@@ -187,6 +194,7 @@ class LiveTranscriber {
         modelPath: modelPath,
         audioPath: wave.path,
         language: language,
+        extraArgs: extraArgs,
       );
       final cleaned = text.trim();
       if (cleaned.isNotEmpty) {
@@ -202,6 +210,7 @@ class LiveTranscriber {
             pending,
             whisperPath: whisperPath,
             modelPath: modelPath,
+            extraArgs: extraArgs,
             language: language,
             onSegment: onSegment,
             onStatus: onStatus,

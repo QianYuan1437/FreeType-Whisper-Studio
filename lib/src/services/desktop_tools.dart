@@ -123,6 +123,7 @@ class DesktopTools {
     required String modelPath,
     required String audioPath,
     String language = 'auto',
+    List<String> extraArgs = const [],
   }) async {
     final tempDir = await getTemporaryDirectory();
     final base = p.join(
@@ -135,6 +136,7 @@ class DesktopTools {
       '-f',
       audioPath,
       if (language != 'auto') ...['-l', language],
+      ...extraArgs,
       '-otxt',
       '-of',
       base,
@@ -210,5 +212,49 @@ class DesktopTools {
     writeUint32(pcmBytes.length);
     bytes.add(pcmBytes);
     return bytes.toBytes();
+  }
+
+  List<String> parseArguments(String rawArgs) {
+    final args = <String>[];
+    final buffer = StringBuffer();
+    String? quote;
+    var escaping = false;
+
+    for (final char in rawArgs.split('')) {
+      if (escaping) {
+        buffer.write(char);
+        escaping = false;
+        continue;
+      }
+      if (char == r'\') {
+        escaping = true;
+        continue;
+      }
+      if (quote != null) {
+        if (char == quote) {
+          quote = null;
+        } else {
+          buffer.write(char);
+        }
+        continue;
+      }
+      if (char == '"' || char == "'") {
+        quote = char;
+        continue;
+      }
+      if (RegExp(r'\s').hasMatch(char)) {
+        if (buffer.isNotEmpty) {
+          args.add(buffer.toString());
+          buffer.clear();
+        }
+        continue;
+      }
+      buffer.write(char);
+    }
+
+    if (buffer.isNotEmpty) {
+      args.add(buffer.toString());
+    }
+    return args;
   }
 }

@@ -119,6 +119,11 @@ class _HomePageState extends State<HomePage> {
                             strings: strings,
                           ),
                           const SizedBox(height: 20),
+                          _AutomationCard(
+                            controller: controller,
+                            strings: strings,
+                          ),
+                          const SizedBox(height: 20),
                           _SettingsCard(
                             controller: controller,
                             strings: strings,
@@ -156,6 +161,11 @@ class _HomePageState extends State<HomePage> {
                               controller: controller,
                               strings: strings,
                             ),
+                          ),
+                          const SizedBox(height: 20),
+                          _AutomationCard(
+                            controller: controller,
+                            strings: strings,
                           ),
                           const SizedBox(height: 20),
                           SizedBox(
@@ -477,6 +487,67 @@ class _DictationSettingsCard extends StatelessWidget {
   }
 }
 
+class _AutomationCard extends StatelessWidget {
+  const _AutomationCard({
+    required this.controller,
+    required this.strings,
+  });
+
+  final AppController controller;
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              strings.t('automationSettings'),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 12),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: Text(strings.t('copySnippet')),
+              value: controller.copySnippetEnabled,
+              onChanged: controller.setCopySnippetEnabled,
+            ),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: Text(strings.t('autoPaste')),
+              value: controller.autoPasteEnabled,
+              onChanged: controller.setAutoPasteEnabled,
+            ),
+            SwitchListTile.adaptive(
+              contentPadding: EdgeInsets.zero,
+              title: Text(strings.t('globalHotkeys')),
+              value: controller.globalHotkeysEnabled,
+              onChanged: (value) {
+                controller.setGlobalHotkeysEnabled(value);
+              },
+            ),
+            const SizedBox(height: 8),
+            _InfoRow(
+              label: strings.t('toggleHotkey'),
+              value: strings.t('hotkeyToggleValue'),
+            ),
+            const SizedBox(height: 8),
+            _InfoRow(
+              label: strings.t('pasteHotkey'),
+              value: strings.t('hotkeyPasteValue'),
+            ),
+            const SizedBox(height: 12),
+            Text(strings.t('automationHint')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SettingsCard extends StatelessWidget {
   const _SettingsCard({required this.controller, required this.strings});
 
@@ -501,6 +572,13 @@ class _SettingsCard extends StatelessWidget {
               value: controller.whisperExecutable,
               buttonLabel: 'File',
               onTap: controller.pickWhisperExecutable,
+            ),
+            const SizedBox(height: 12),
+            _EditableField(
+              label: strings.t('whisperArgs'),
+              initialValue: controller.whisperExtraArgs,
+              hintText: strings.t('whisperArgsHint'),
+              onChanged: controller.setWhisperExtraArgs,
             ),
             const SizedBox(height: 12),
             _PathRow(
@@ -816,6 +894,39 @@ class _TextCard extends StatelessWidget {
   }
 }
 
+class _EditableField extends StatelessWidget {
+  const _EditableField({
+    required this.label,
+    required this.initialValue,
+    required this.onChanged,
+    this.hintText,
+  });
+
+  final String label;
+  final String initialValue;
+  final void Function(String value) onChanged;
+  final String? hintText;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label),
+        const SizedBox(height: 6),
+        TextFormField(
+          key: ValueKey('$label-$initialValue'),
+          initialValue: initialValue,
+          minLines: 1,
+          maxLines: 2,
+          onChanged: onChanged,
+          decoration: InputDecoration(hintText: hintText),
+        ),
+      ],
+    );
+  }
+}
+
 class _PathRow extends StatelessWidget {
   const _PathRow({
     required this.label,
@@ -850,6 +961,23 @@ class _PathRow extends StatelessWidget {
             FilledButton.tonal(onPressed: onTap, child: Text(buttonLabel)),
           ],
         ),
+      ],
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  const _InfoRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(child: Text(label)),
+        SelectableText(value),
       ],
     );
   }

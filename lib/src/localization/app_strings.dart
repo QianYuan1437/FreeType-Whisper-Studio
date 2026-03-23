@@ -7,7 +7,7 @@ class AppStrings {
     'en': {
       'appTitle': 'FreeType Whisper Studio',
       'appSubtitle':
-          'A rounded desktop workspace for continuous dictation, model control, and Markdown transcripts.',
+          'A rounded desktop workspace for continuous dictation, Whisper runtime tuning, and Markdown transcripts.',
       'liveTitle': 'Live Dictation',
       'liveHint':
           'Keep listening continuously with a rolling audio window, low-latency updates, and overlap-aware text merging.',
@@ -27,12 +27,15 @@ class AppStrings {
       'importButton': 'Import Video',
       'settings': 'Runtime Settings',
       'dictationSettings': 'Dictation Settings',
+      'automationSettings': 'Automation',
       'models': 'Model Library',
       'dark': 'Dark',
       'light': 'Light',
       'followSystem': 'System',
       'modelDir': 'Model directory',
       'whisperPath': 'Whisper executable',
+      'whisperArgs': 'Additional Whisper args',
+      'whisperArgsHint': 'Example: -ngl 99 -fa -bs 8',
       'ffmpegPath': 'FFmpeg executable',
       'selectedModel': 'Selected model',
       'download': 'Download',
@@ -71,12 +74,20 @@ class AppStrings {
           'Fast uses smaller chunks, Precise keeps a larger rolling window for smoother sentence completion.',
       'saveMarkdown': 'Save Markdown',
       'markdownSaved': 'Markdown exported successfully.',
-      'noTranscriptYet':
-          'Generate a transcript first before exporting Markdown.',
+      'noTranscriptYet': 'Generate a transcript first before exporting Markdown.',
+      'copySnippet': 'Copy each confirmed snippet',
+      'autoPaste': 'Auto paste into active input',
+      'globalHotkeys': 'Enable global hotkeys',
+      'toggleHotkey': 'Toggle dictation hotkey',
+      'pasteHotkey': 'Paste latest text hotkey',
+      'automationHint':
+          'Auto paste uses the clipboard and sends Ctrl+V. On Linux it requires xdotool.',
+      'hotkeyToggleValue': 'Alt + Shift + R',
+      'hotkeyPasteValue': 'Alt + Shift + V',
     },
     'zh': {
       'appTitle': 'FreeType Whisper 工作台',
-      'appSubtitle': '一个圆角风格的桌面工作台，支持连续听写、模型管理与 Markdown 记录。',
+      'appSubtitle': '一个圆角风格的桌面工作台，支持连续听写、Whisper 运行时调优与 Markdown 记录。',
       'liveTitle': '实时听写',
       'liveHint': '使用滚动音频窗口持续监听，并结合低延迟更新与重叠去重拼接，体验更接近 Typeless。',
       'start': '开始',
@@ -94,12 +105,15 @@ class AppStrings {
       'importButton': '导入视频',
       'settings': '运行设置',
       'dictationSettings': '听写设置',
+      'automationSettings': '自动化',
       'models': '模型库',
       'dark': '深色',
       'light': '浅色',
       'followSystem': '跟随系统',
       'modelDir': '模型目录',
       'whisperPath': 'Whisper 可执行文件',
+      'whisperArgs': 'Whisper 附加参数',
+      'whisperArgsHint': '示例：-ngl 99 -fa -bs 8',
       'ffmpegPath': 'FFmpeg 可执行文件',
       'selectedModel': '当前模型',
       'download': '下载',
@@ -132,9 +146,16 @@ class AppStrings {
       'saveMarkdown': '保存 Markdown',
       'markdownSaved': 'Markdown 导出成功。',
       'noTranscriptYet': '请先生成转写内容，再导出 Markdown。',
+      'copySnippet': '复制每次确认后的片段',
+      'autoPaste': '自动粘贴到当前输入框',
+      'globalHotkeys': '启用全局快捷键',
+      'toggleHotkey': '开始或停止听写快捷键',
+      'pasteHotkey': '粘贴最新文本快捷键',
+      'automationHint': '自动粘贴会使用剪贴板并发送 Ctrl+V。Linux 下需要安装 xdotool。',
+      'hotkeyToggleValue': 'Alt + Shift + R',
+      'hotkeyPasteValue': 'Alt + Shift + V',
     },
   };
 
-  String t(String key) =>
-      _values[localeCode]?[key] ?? _values['en']![key] ?? key;
+  String t(String key) => _values[localeCode]?[key] ?? _values['en']![key] ?? key;
 }

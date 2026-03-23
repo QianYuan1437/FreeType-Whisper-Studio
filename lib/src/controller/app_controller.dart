@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -7,13 +8,17 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../models/whisper_model.dart';
+import '../services/desktop_automation.dart';
 import '../services/desktop_tools.dart';
+import '../services/global_hotkey_service.dart';
 import '../services/live_transcriber.dart';
 
 class AppController extends ChangeNotifier {
   AppController();
 
   final DesktopTools _tools = DesktopTools();
+  final DesktopAutomation _automation = DesktopAutomation();
+  final GlobalHotkeyService _hotkeys = GlobalHotkeyService();
   LiveTranscriber? _liveTranscriber;
 
   ThemeMode themeMode = ThemeMode.system;
@@ -25,13 +30,18 @@ class AppController extends ChangeNotifier {
   String transcript = '';
   String markdown = '';
   String latestSegment = '';
+  String latestInsertedText = '';
   String whisperExecutable = '';
+  String whisperExtraArgs = '';
   String ffmpegExecutable = '';
   String modelDirectory = '';
   String selectedModelPath = '';
   String modelFilter = 'all';
   String dictationLanguage = 'auto';
   String latencyPreset = 'steady';
+  bool autoPasteEnabled = false;
+  bool copySnippetEnabled = false;
+  bool globalHotkeysEnabled = true;
   double downloadProgress = 0;
 
   Future<void> initialize() async {
@@ -39,15 +49,19 @@ class AppController extends ChangeNotifier {
     themeMode = ThemeMode.values[prefs.getInt('themeMode') ?? 0];
     localeCode = prefs.getString('localeCode') ?? 'zh';
     whisperExecutable = prefs.getString('whisperExecutable') ?? '';
+    whisperExtraArgs = prefs.getString('whisperExtraArgs') ?? '';
     ffmpegExecutable = prefs.getString('ffmpegExecutable') ?? '';
     modelDirectory =
-        prefs.getString('modelDirectory') ??
-        await _tools.defaultModelDirectory();
+        prefs.getString('modelDirectory') ?? await _tools.defaultModelDirectory();
     selectedModelPath = prefs.getString('selectedModelPath') ?? '';
     dictationLanguage = prefs.getString('dictationLanguage') ?? 'auto';
     latencyPreset = prefs.getString('latencyPreset') ?? 'steady';
+    autoPasteEnabled = prefs.getBool('autoPasteEnabled') ?? false;
+    copySnippetEnabled = prefs.getBool('copySnippetEnabled') ?? false;
+    globalHotkeysEnabled = prefs.getBool('globalHotkeysEnabled') ?? true;
     status = 'ready';
     _liveTranscriber = LiveTranscriber(_tools);
+    await _refreshHotkeys();
     isReady = true;
     notifyListeners();
   }
@@ -57,22 +71,26 @@ class AppController extends ChangeNotifier {
     await prefs.setInt('themeMode', themeMode.index);
     await prefs.setString('localeCode', localeCode);
     await prefs.setString('whisperExecutable', whisperExecutable);
+    await prefs.setString('whisperExtraArgs', whisperExtraArgs);
     await prefs.setString('ffmpegExecutable', ffmpegExecutable);
     await prefs.setString('modelDirectory', modelDirectory);
     await prefs.setString('selectedModelPath', selectedModelPath);
     await prefs.setString('dictationLanguage', dictationLanguage);
     await prefs.setString('latencyPreset', latencyPreset);
+    await prefs.setBool('autoPasteEnabled', autoPasteEnabled);
+    await prefs.setBool('copySnippetEnabled', copySnippetEnabled);
+    await prefs.setBool('globalHotkeysEnabled', globalHotkeysEnabled);
   }
 
   void setThemeMode(ThemeMode mode) {
     themeMode = mode;
-    _persist();
+    unawaited(_persist());
     notifyListeners();
   }
 
   void setLocaleCode(String code) {
     localeCode = code;
-    _persist();
+    unawaited(_persist());
     notifyListeners();
   }
 
@@ -83,14 +101,58 @@ class AppController extends ChangeNotifier {
 
   void setDictationLanguage(String value) {
     dictationLanguage = value;
-    _persist();
+    unawaited(_persist());
     notifyListeners();
   }
 
   void setLatencyPreset(String value) {
     latencyPreset = value;
-    _persist();
+    unawaited(_persist());
     notifyListeners();
+  }
+
+  void setWhisperExtraArgs(String value) {
+    whisperExtraArgs = value;
+    unawaited(_persist());
+    notifyListeners();
+  }
+
+  void setAutoPasteEnabled(bool value) {
+    autoPasteEnabled = value;
+    unawaited(_persist());
+    notifyListeners();
+  }
+
+  void setCopySnippetEnabled(bool value) {
+    copySnippetEnabled = value;
+    unawaited(_persist());
+    notifyListeners();
+  }
+
+  Future<void> setGlobalHotkeysEnabled(bool value) async {
+    globalHotkeysEnabled = value;
+    await _persist();
+    await _refreshHotkeys();
+    notifyListeners();
+  }
+
+  Future<void> _refreshHotkeys() async {
+    if (!globalHotkeysEnabled) {
+      await _hotkeys.unregisterAll();
+      return;
+    }
+    await _hotkeys.register(
+      onToggleDictation: _toggleDictationFromHotkey,
+      onPasteLatest: pasteLatestText,
+    );
+  }
+
+  Future<void> _toggleDictationFromHotkey() async {
+    if (isListening) {
+      await stopLiveTranscription();
+    } else {
+      await startLiveTranscription();
+    }
   }
 
   Future<List<String>> refreshAvailableModels() {
@@ -146,7 +208,7 @@ class AppController extends ChangeNotifier {
 
   void selectModelPath(String value) {
     selectedModelPath = value;
-    _persist();
+    unawaited(_persist());
     notifyListeners();
   }
 
@@ -199,12 +261,10 @@ class AppController extends ChangeNotifier {
         .start(
           whisperPath: whisperExecutable,
           modelPath: selectedModelPath,
+          extraArgs: _tools.parseArguments(whisperExtraArgs),
           profile: _profileForPreset(latencyPreset),
           onSegment: (text) {
-            latestSegment = text;
-            transcript = _mergeTranscript(transcript, text);
-            markdown = _buildMarkdown();
-            notifyListeners();
+            unawaited(_handleRecognizedSegment(text));
           },
           onStatus: (value) {
             status = value;
@@ -231,11 +291,9 @@ class AppController extends ChangeNotifier {
       whisperPath: whisperExecutable,
       modelPath: selectedModelPath,
       language: dictationLanguage,
+      extraArgs: _tools.parseArguments(whisperExtraArgs),
       onSegment: (text) {
-        latestSegment = text;
-        transcript = _mergeTranscript(transcript, text);
-        markdown = _buildMarkdown();
-        notifyListeners();
+        unawaited(_handleRecognizedSegment(text));
       },
       onStatus: (value) {
         status = value;
@@ -245,6 +303,44 @@ class AppController extends ChangeNotifier {
     isListening = false;
     status = 'idle';
     notifyListeners();
+  }
+
+  Future<void> _handleRecognizedSegment(String text) async {
+    latestSegment = text;
+    final mergeResult = _mergeTranscript(transcript, text);
+    transcript = mergeResult.mergedText;
+    latestInsertedText = mergeResult.appendedText;
+    markdown = _buildMarkdown();
+    notifyListeners();
+
+    if (latestInsertedText.isEmpty) {
+      return;
+    }
+
+    if (copySnippetEnabled) {
+      await _automation.copyText(latestInsertedText);
+    }
+    if (autoPasteEnabled) {
+      final error = await _automation.pasteTextIntoActiveInput(latestInsertedText);
+      if (error != null && error.isNotEmpty) {
+        status = error;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<String?> pasteLatestText() async {
+    final text = latestInsertedText.isNotEmpty ? latestInsertedText : transcript;
+    if (text.trim().isEmpty) {
+      return 'no-transcript-yet';
+    }
+    final error = await _automation.pasteTextIntoActiveInput(text);
+    if (error != null) {
+      status = error;
+      notifyListeners();
+      return error;
+    }
+    return null;
   }
 
   Future<String?> importVideoAndTranscribe() async {
@@ -281,9 +377,11 @@ class AppController extends ChangeNotifier {
         modelPath: selectedModelPath,
         audioPath: audio.path,
         language: dictationLanguage,
+        extraArgs: _tools.parseArguments(whisperExtraArgs),
       );
       transcript = text.trim();
       latestSegment = transcript;
+      latestInsertedText = transcript;
       markdown = _buildMarkdown(source: p.basename(videoPath));
       await saveMarkdown(
         defaultFileName: '${p.basenameWithoutExtension(videoPath)}.md',
@@ -348,55 +446,65 @@ class AppController extends ChangeNotifier {
     }
   }
 
-  String _mergeTranscript(String existing, String incoming) {
-    final normalizedExisting = _normalizeForMerge(existing);
-    final normalizedIncoming = _normalizeForMerge(incoming);
-    if (normalizedIncoming.isEmpty) {
-      return existing;
+  _MergeResult _mergeTranscript(String existing, String incoming) {
+    final existingNormalized = _NormalizedText.fromOriginal(existing);
+    final incomingNormalized = _NormalizedText.fromOriginal(incoming);
+    if (incomingNormalized.normalized.isEmpty) {
+      return _MergeResult(existing, '');
     }
-    if (normalizedExisting.isEmpty) {
-      return incoming.trim();
-    }
-    if (normalizedExisting.endsWith(normalizedIncoming)) {
-      return existing.trim();
+    if (existingNormalized.normalized.isEmpty) {
+      return _MergeResult(incoming.trim(), incoming.trim());
     }
 
-    final existingWords = normalizedExisting.split(' ');
-    final incomingWords = normalizedIncoming.split(' ');
-    var overlap = 0;
-    final maxOverlap = existingWords.length < incomingWords.length
-        ? existingWords.length
-        : incomingWords.length;
+    final overlap = _findCharOverlap(
+      existingNormalized.normalized,
+      incomingNormalized.normalized,
+    );
 
-    for (var count = maxOverlap; count > 0; count--) {
-      final existingTail = existingWords
-          .sublist(existingWords.length - count)
-          .join(' ');
-      final incomingHead = incomingWords.sublist(0, count).join(' ');
-      if (existingTail == incomingHead) {
-        overlap = count;
-        break;
-      }
+    if (overlap == incomingNormalized.normalized.length) {
+      return _MergeResult(existing.trim(), '');
     }
 
-    if (overlap == incomingWords.length) {
-      return existing.trim();
+    final appendStart =
+        overlap == 0 ? 0 : incomingNormalized.originalEndOffsets[overlap - 1];
+    final suffix = incoming.substring(appendStart);
+    if (suffix.trim().isEmpty) {
+      return _MergeResult(existing.trim(), '');
     }
 
-    final suffix = incomingWords.sublist(overlap).join(' ');
-    if (suffix.isEmpty) {
-      return existing.trim();
-    }
-    return '${existing.trim()} $suffix'.trim();
+    final prefixSpace =
+        overlap == 0 &&
+            existing.trim().isNotEmpty &&
+            !_shouldJoinWithoutSpace(existing, suffix)
+        ? ' '
+        : '';
+    final appendedText = '$prefixSpace${suffix.trimLeft()}';
+    return _MergeResult(
+      '${existing.trimRight()}$appendedText'.trim(),
+      appendedText,
+    );
   }
 
-  String _normalizeForMerge(String value) {
-    return value
-        .toLowerCase()
-        .replaceAll(RegExp(r'[\r\n]+'), ' ')
-        .replaceAll(RegExp(r'[^\p{L}\p{N}\s]+', unicode: true), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+  int _findCharOverlap(String existing, String incoming) {
+    final maxOverlap = existing.length < incoming.length
+        ? existing.length
+        : incoming.length;
+    for (var count = maxOverlap; count > 0; count--) {
+      if (existing.substring(existing.length - count) ==
+          incoming.substring(0, count)) {
+        return count;
+      }
+    }
+    return 0;
+  }
+
+  bool _shouldJoinWithoutSpace(String left, String right) {
+    final trimmedRight = right.trimLeft();
+    if (trimmedRight.isEmpty) {
+      return true;
+    }
+    final first = String.fromCharCode(trimmedRight.runes.first);
+    return RegExp(r'^[\p{Script=Han}\p{P}]$', unicode: true).hasMatch(first);
   }
 
   String _buildMarkdown({String? source}) {
@@ -409,11 +517,60 @@ class AppController extends ChangeNotifier {
       '- Model: ${selectedModelPath.isEmpty ? 'Unselected' : p.basename(selectedModelPath)}',
       '- Language: $dictationLanguage',
       '- Latency: $latencyPreset',
+      '- Extra args: ${whisperExtraArgs.isEmpty ? '(none)' : whisperExtraArgs}',
       '',
       '## Transcript',
       '',
       transcript.trim(),
       '',
     ].join('\n');
+  }
+}
+
+class _MergeResult {
+  const _MergeResult(this.mergedText, this.appendedText);
+
+  final String mergedText;
+  final String appendedText;
+}
+
+class _NormalizedText {
+  const _NormalizedText({
+    required this.normalized,
+    required this.originalEndOffsets,
+  });
+
+  final String normalized;
+  final List<int> originalEndOffsets;
+
+  factory _NormalizedText.fromOriginal(String original) {
+    final buffer = StringBuffer();
+    final offsets = <int>[];
+    var codeUnitOffset = 0;
+    var lastWasSpace = false;
+
+    for (final rune in original.runes) {
+      final char = String.fromCharCode(rune);
+      codeUnitOffset += char.length;
+      if (RegExp(r'\s', unicode: true).hasMatch(char)) {
+        if (buffer.isEmpty || lastWasSpace) {
+          continue;
+        }
+        buffer.write(' ');
+        offsets.add(codeUnitOffset);
+        lastWasSpace = true;
+        continue;
+      }
+      if (RegExp(r'[\p{L}\p{N}]', unicode: true).hasMatch(char)) {
+        buffer.write(char.toLowerCase());
+        offsets.add(codeUnitOffset);
+        lastWasSpace = false;
+      }
+    }
+
+    return _NormalizedText(
+      normalized: buffer.toString().trim(),
+      originalEndOffsets: offsets,
+    );
   }
 }
