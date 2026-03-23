@@ -10,7 +10,7 @@
   --primary: #226bff;
   --primary-strong: #1749c9;
   --accent: #20d1b7;
-  --shadow: 0 24px 60px rgba(31, 57, 125, 0.15);
+  --shadow: 0 18px 36px rgba(31, 57, 125, 0.10);
   --radius-xl: 32px;
   --radius-lg: 24px;
   --radius-md: 18px;
@@ -29,7 +29,7 @@
   --primary: #69a3ff;
   --primary-strong: #8eb7ff;
   --accent: #57f0d1;
-  --shadow: 0 24px 70px rgba(0, 0, 0, 0.4);
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
 }
 
 * {
@@ -65,29 +65,6 @@ button {
   overflow: hidden;
 }
 
-.aurora {
-  position: fixed;
-  inset: auto;
-  width: 34rem;
-  height: 34rem;
-  border-radius: 999px;
-  filter: blur(55px);
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.aurora-a {
-  top: -10rem;
-  right: -8rem;
-  background: rgba(77, 124, 255, 0.42);
-}
-
-.aurora-b {
-  bottom: -14rem;
-  left: -10rem;
-  background: rgba(42, 226, 187, 0.28);
-}
-
 .topbar,
 main,
 .site-footer,
@@ -98,7 +75,7 @@ main,
 
 .topbar {
   position: sticky;
-  top: 18px;
+  top: 12px;
   z-index: 10;
   margin-top: 18px;
   padding: 16px 18px;
@@ -111,8 +88,6 @@ main,
 .glass-card {
   background: var(--surface);
   border: 1px solid var(--surface-border);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   box-shadow: var(--shadow);
   border-radius: var(--radius-xl);
 }
@@ -229,8 +204,7 @@ h3 {
 .timeline-item p,
 .preview-card p,
 .info-panel p,
-.faq-item p,
-.cta-card p {
+.faq-item p {
   color: var(--text-soft);
   line-height: 1.72;
   font-size: 1rem;
@@ -279,7 +253,6 @@ h3 {
 .preview-card,
 .info-panel,
 .faq-item,
-.cta-card,
 .hero-panel {
   padding: 22px;
 }
@@ -586,15 +559,6 @@ h3 {
   font-weight: 700;
 }
 
-.cta-card {
-  text-align: center;
-  padding: 34px 24px;
-}
-
-.cta-card .primary-button {
-  margin-top: 8px;
-}
-
 .site-footer {
   padding-bottom: 42px;
 }
@@ -690,7 +654,6 @@ h3 {
   .preview-card,
   .info-panel,
   .faq-item,
-  .cta-card,
   .hero-panel {
     padding: 20px;
   }

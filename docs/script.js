@@ -90,12 +90,6 @@
       '\u4e0e Whisper \u751f\u6001\u4fdd\u6301\u4e00\u81f4\u7684\u5f00\u6e90\u8bb8\u53ef',
     licenseText:
       '\u9879\u76ee\u5f53\u524d\u91c7\u7528 MIT License\uff0c\u4ee5\u4fdd\u6301\u548c Whisper \u9879\u76ee\u5bb6\u65cf\u53ca\u5e38\u89c1\u517c\u5bb9\u8fd0\u884c\u65f6\u7684\u4e00\u81f4\u6027\u3002',
-    ctaEyebrow: 'GitHub Pages',
-    ctaTitle:
-      '\u628a\u4ed3\u5e93\u7684 `docs/` \u76ee\u5f55\u76f4\u63a5\u53d1\u5e03\u6210\u4ea7\u54c1\u4e3b\u9875',
-    ctaText:
-      '\u5728 GitHub \u4ed3\u5e93\u8bbe\u7f6e\u91cc\u628a Pages Source \u6307\u5411 `Deploy from a branch` \u4e0e `main / docs`\uff0c\u5c31\u53ef\u4ee5\u7528\u8fd9\u5957\u9875\u9762\u4f5c\u4e3a\u516c\u5f00\u5c55\u793a\u7ad9\u70b9\u3002',
-    ctaButton: '\u524d\u5f80 Pages \u8bbe\u7f6e',
     faqEyebrow: 'FAQ',
     faqTitle: '\u90e8\u7f72\u524d\u6700\u5e38\u89c1\u7684\u51e0\u4e2a\u95ee\u9898',
     faq1Title: '\u8fd9\u4e2a\u9879\u76ee\u4f1a\u628a\u8bed\u97f3\u4e0a\u4f20\u5230\u4e91\u7aef\u5417\uff1f',
@@ -198,11 +192,6 @@
     licenseTitle: 'An open-source license aligned with the Whisper ecosystem',
     licenseText:
       'The project currently uses the MIT License to stay aligned with the Whisper project family and common compatible runtimes.',
-    ctaEyebrow: 'GitHub Pages',
-    ctaTitle: 'Publish the repository `docs/` folder directly as a product site',
-    ctaText:
-      'In your GitHub repository settings, set Pages Source to `Deploy from a branch` and choose `main / docs` to publish this site.',
-    ctaButton: 'Open Pages settings',
     faqEyebrow: 'FAQ',
     faqTitle: 'Common questions before deployment',
     faq1Title: 'Does this project upload audio to the cloud?',
