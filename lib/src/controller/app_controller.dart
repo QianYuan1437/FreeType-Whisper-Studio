@@ -20,6 +20,7 @@ class AppController extends ChangeNotifier {
   final DesktopAutomation _automation = DesktopAutomation();
   final GlobalHotkeyService _hotkeys = GlobalHotkeyService();
   LiveTranscriber? _liveTranscriber;
+  Timer? _sentenceCommitTimer;
 
   ThemeMode themeMode = ThemeMode.system;
   String localeCode = 'zh';
@@ -44,6 +45,7 @@ class AppController extends ChangeNotifier {
   bool copySnippetEnabled = false;
   bool globalHotkeysEnabled = true;
   double downloadProgress = 0;
+  String pendingPasteBuffer = '';
 
   Future<void> initialize() async {
     final prefs = await SharedPreferences.getInstance();
@@ -309,6 +311,7 @@ class AppController extends ChangeNotifier {
         notifyListeners();
       },
     );
+    await _flushPendingPasteBuffer();
     isListening = false;
     status = 'idle';
     notifyListeners();
@@ -330,22 +333,18 @@ class AppController extends ChangeNotifier {
       await _automation.copyText(latestInsertedText);
     }
     if (autoPasteEnabled) {
-      final pasteText = pasteMode == 'whole' ? transcript : latestInsertedText;
-      final error = await _automation.pasteTextIntoActiveInput(
-        pasteText,
-        replaceAll: pasteMode == 'whole',
-      );
-      if (error != null && error.isNotEmpty) {
-        status = error;
-        notifyListeners();
-      }
+      await _handleAutoPasteForSnippet(latestInsertedText);
     }
   }
 
   Future<String?> pasteLatestText() async {
-    final text = pasteMode == 'whole'
-        ? transcript
-        : (latestInsertedText.isNotEmpty ? latestInsertedText : transcript);
+    final text = switch (pasteMode) {
+      'whole' => transcript,
+      'sentence' => pendingPasteBuffer.isNotEmpty
+          ? pendingPasteBuffer
+          : (latestInsertedText.isNotEmpty ? latestInsertedText : transcript),
+      _ => latestInsertedText.isNotEmpty ? latestInsertedText : transcript,
+    };
     if (text.trim().isEmpty) {
       return 'no-transcript-yet';
     }
@@ -358,7 +357,80 @@ class AppController extends ChangeNotifier {
       notifyListeners();
       return error;
     }
+    if (pasteMode == 'sentence' && pendingPasteBuffer.isNotEmpty) {
+      pendingPasteBuffer = '';
+      _sentenceCommitTimer?.cancel();
+      _sentenceCommitTimer = null;
+      notifyListeners();
+    }
     return null;
+  }
+
+  Future<void> _handleAutoPasteForSnippet(String snippet) async {
+    switch (pasteMode) {
+      case 'whole':
+        await _applyPaste(transcript, replaceAll: true);
+        return;
+      case 'sentence':
+        await _queueSentencePaste(snippet);
+        return;
+      default:
+        await _applyPaste(snippet, replaceAll: false);
+        return;
+    }
+  }
+
+  Future<void> _queueSentencePaste(String snippet) async {
+    if (snippet.trim().isEmpty) {
+      return;
+    }
+
+    pendingPasteBuffer =
+        pendingPasteBuffer.isEmpty ? snippet : '$pendingPasteBuffer$snippet';
+    notifyListeners();
+
+    if (_looksSentenceFinal(snippet)) {
+      await _flushPendingPasteBuffer();
+      return;
+    }
+
+    _sentenceCommitTimer?.cancel();
+    _sentenceCommitTimer = Timer(const Duration(milliseconds: 1400), () {
+      unawaited(_flushPendingPasteBuffer());
+    });
+  }
+
+  Future<void> _flushPendingPasteBuffer() async {
+    _sentenceCommitTimer?.cancel();
+    _sentenceCommitTimer = null;
+    final text = pendingPasteBuffer.trim();
+    if (text.isEmpty) {
+      pendingPasteBuffer = '';
+      notifyListeners();
+      return;
+    }
+    pendingPasteBuffer = '';
+    notifyListeners();
+    await _applyPaste(text, replaceAll: false);
+  }
+
+  Future<void> _applyPaste(String text, {required bool replaceAll}) async {
+    final error = await _automation.pasteTextIntoActiveInput(
+      text,
+      replaceAll: replaceAll,
+    );
+    if (error != null && error.isNotEmpty) {
+      status = error;
+      notifyListeners();
+    }
+  }
+
+  bool _looksSentenceFinal(String text) {
+    final trimmed = text.trimRight();
+    if (trimmed.isEmpty) {
+      return false;
+    }
+    return RegExp(r'[.!?。！？；;：:…]$').hasMatch(trimmed);
   }
 
   Future<String?> importVideoAndTranscribe() async {
@@ -542,6 +614,14 @@ class AppController extends ChangeNotifier {
       transcript.trim(),
       '',
     ].join('\n');
+  }
+
+  @override
+  void dispose() {
+    _sentenceCommitTimer?.cancel();
+    unawaited(_hotkeys.unregisterAll());
+    unawaited(_liveTranscriber?.dispose());
+    super.dispose();
   }
 }
 

@@ -539,6 +539,10 @@ class _AutomationCard extends StatelessWidget {
                   label: Text(strings.t('pasteIncremental')),
                 ),
                 ButtonSegment(
+                  value: 'sentence',
+                  label: Text(strings.t('pasteSentence')),
+                ),
+                ButtonSegment(
                   value: 'whole',
                   label: Text(strings.t('pasteWhole')),
                 ),
