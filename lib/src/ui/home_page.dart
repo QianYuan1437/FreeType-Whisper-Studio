@@ -41,26 +41,6 @@ class _HomePageState extends State<HomePage> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    final hero = _HeroCard(controller: controller, strings: strings);
-    final transcript = _TextCard(
-      title: strings.t('transcript'),
-      content: controller.transcript,
-      emptyText: strings.t('emptyTranscript'),
-    );
-    final markdown = _TextCard(
-      title: strings.t('notes'),
-      content: controller.markdown,
-      emptyText: strings.t('emptyNotes'),
-    );
-    final settings = _SettingsCard(controller: controller, strings: strings);
-    final models = _ModelsCard(
-      controller: controller,
-      strings: strings,
-      availableModels: _availableModels,
-      onRefresh: _refreshModels,
-    );
-    final importer = _ImportCard(controller: controller, strings: strings);
-
     return Scaffold(
       body: Container(
         decoration: BoxDecoration(
@@ -86,58 +66,145 @@ class _HomePageState extends State<HomePage> {
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       final wide = constraints.maxWidth >= 1180;
+                      final leftPane = Column(
+                        children: [
+                          _HeroCard(controller: controller, strings: strings),
+                          const SizedBox(height: 20),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _TextCard(
+                                    title: strings.t('transcript'),
+                                    content: controller.transcript,
+                                    emptyText: strings.t('emptyTranscript'),
+                                  ),
+                                ),
+                                const SizedBox(width: 20),
+                                Expanded(
+                                  child: _TextCard(
+                                    title: strings.t('notes'),
+                                    content: controller.markdown,
+                                    emptyText: strings.t('emptyNotes'),
+                                    actionLabel: strings.t('saveMarkdown'),
+                                    onAction: () async {
+                                      final message = await controller
+                                          .saveMarkdown();
+                                      if (!context.mounted) {
+                                        return;
+                                      }
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            message == null
+                                                ? strings.t('markdownSaved')
+                                                : _mapError(strings, message),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                      final rightPane = ListView(
+                        children: [
+                          _DictationSettingsCard(
+                            controller: controller,
+                            strings: strings,
+                          ),
+                          const SizedBox(height: 20),
+                          _SettingsCard(
+                            controller: controller,
+                            strings: strings,
+                          ),
+                          const SizedBox(height: 20),
+                          _ModelsCard(
+                            controller: controller,
+                            strings: strings,
+                            availableModels: _availableModels,
+                            onRefresh: _refreshModels,
+                          ),
+                          const SizedBox(height: 20),
+                          _ImportCard(controller: controller, strings: strings),
+                        ],
+                      );
+
                       if (wide) {
                         return Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              flex: 6,
-                              child: Column(
-                                children: [
-                                  hero,
-                                  const SizedBox(height: 20),
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Expanded(child: transcript),
-                                        const SizedBox(width: 20),
-                                        Expanded(child: markdown),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
+                            Expanded(flex: 6, child: leftPane),
                             const SizedBox(width: 20),
-                            Expanded(
-                              flex: 4,
-                              child: ListView(
-                                children: [
-                                  settings,
-                                  const SizedBox(height: 20),
-                                  models,
-                                  const SizedBox(height: 20),
-                                  importer,
-                                ],
-                              ),
-                            ),
+                            Expanded(flex: 4, child: rightPane),
                           ],
                         );
                       }
 
                       return ListView(
                         children: [
-                          hero,
+                          _HeroCard(controller: controller, strings: strings),
                           const SizedBox(height: 20),
-                          SizedBox(height: 320, child: transcript),
+                          SizedBox(
+                            height: 230,
+                            child: _DictationSettingsCard(
+                              controller: controller,
+                              strings: strings,
+                            ),
+                          ),
                           const SizedBox(height: 20),
-                          SizedBox(height: 320, child: markdown),
+                          SizedBox(
+                            height: 300,
+                            child: _TextCard(
+                              title: strings.t('transcript'),
+                              content: controller.transcript,
+                              emptyText: strings.t('emptyTranscript'),
+                            ),
+                          ),
                           const SizedBox(height: 20),
-                          settings,
+                          SizedBox(
+                            height: 300,
+                            child: _TextCard(
+                              title: strings.t('notes'),
+                              content: controller.markdown,
+                              emptyText: strings.t('emptyNotes'),
+                              actionLabel: strings.t('saveMarkdown'),
+                              onAction: () async {
+                                final message = await controller.saveMarkdown();
+                                if (!context.mounted) {
+                                  return;
+                                }
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      message == null
+                                          ? strings.t('markdownSaved')
+                                          : _mapError(strings, message),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                           const SizedBox(height: 20),
-                          models,
+                          _SettingsCard(
+                            controller: controller,
+                            strings: strings,
+                          ),
                           const SizedBox(height: 20),
-                          importer,
+                          _ModelsCard(
+                            controller: controller,
+                            strings: strings,
+                            availableModels: _availableModels,
+                            onRefresh: _refreshModels,
+                          ),
+                          const SizedBox(height: 20),
+                          _ImportCard(controller: controller, strings: strings),
                         ],
                       );
                     },
@@ -240,6 +307,7 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final statusLabel = _statusLabel(strings, controller.status);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(24),
@@ -263,9 +331,9 @@ class _HeroCard extends StatelessWidget {
                         : strings.t('idle'),
                   ),
                 ),
-                Chip(
-                  label: Text('${strings.t('status')}: ${controller.status}'),
-                ),
+                Chip(label: Text('${strings.t('status')}: $statusLabel')),
+                if (controller.selectedModelPath.isNotEmpty)
+                  Chip(label: Text(p.basename(controller.selectedModelPath))),
               ],
             ),
             const SizedBox(height: 18),
@@ -281,6 +349,30 @@ class _HeroCard extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 18),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: theme.colorScheme.surfaceContainerLow,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.t('segmentPreview'),
+                    style: theme.textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    controller.latestSegment.isEmpty
+                        ? strings.t('emptyTranscript')
+                        : controller.latestSegment,
+                  ),
+                ],
+              ),
+            ),
             const SizedBox(height: 20),
             Row(
               children: [
@@ -288,11 +380,10 @@ class _HeroCard extends StatelessWidget {
                   onPressed: controller.isListening
                       ? null
                       : () async {
-                          final messenger = ScaffoldMessenger.of(context);
                           final error = await controller
                               .startLiveTranscription();
                           if (error != null && context.mounted) {
-                            messenger.showSnackBar(
+                            ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(_mapError(strings, error)),
                               ),
@@ -312,6 +403,73 @@ class _HeroCard extends StatelessWidget {
                 ),
               ],
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DictationSettingsCard extends StatelessWidget {
+  const _DictationSettingsCard({
+    required this.controller,
+    required this.strings,
+  });
+
+  final AppController controller;
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(22),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              strings.t('dictationSettings'),
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+            const SizedBox(height: 16),
+            Text(strings.t('dictationLanguage')),
+            const SizedBox(height: 10),
+            SegmentedButton<String>(
+              segments: [
+                ButtonSegment(
+                  value: 'auto',
+                  label: Text(strings.t('autoDetect')),
+                ),
+                ButtonSegment(value: 'zh', label: Text(strings.t('chinese'))),
+                ButtonSegment(value: 'en', label: Text(strings.t('english'))),
+              ],
+              selected: {controller.dictationLanguage},
+              onSelectionChanged: (selection) {
+                controller.setDictationLanguage(selection.first);
+              },
+            ),
+            const SizedBox(height: 16),
+            Text(strings.t('latency')),
+            const SizedBox(height: 10),
+            SegmentedButton<String>(
+              segments: [
+                ButtonSegment(value: 'fast', label: Text(strings.t('fast'))),
+                ButtonSegment(
+                  value: 'steady',
+                  label: Text(strings.t('steady')),
+                ),
+                ButtonSegment(
+                  value: 'precise',
+                  label: Text(strings.t('precise')),
+                ),
+              ],
+              selected: {controller.latencyPreset},
+              onSelectionChanged: (selection) {
+                controller.setLatencyPreset(selection.first);
+              },
+            ),
+            const SizedBox(height: 14),
+            Text(strings.t('liveModeHint')),
           ],
         ),
       ),
@@ -425,7 +583,8 @@ class _ModelsCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: availableModels.contains(controller.selectedModelPath)
+              initialValue:
+                  availableModels.contains(controller.selectedModelPath)
                   ? controller.selectedModelPath
                   : null,
               decoration: InputDecoration(
@@ -611,11 +770,15 @@ class _TextCard extends StatelessWidget {
     required this.title,
     required this.content,
     required this.emptyText,
+    this.actionLabel,
+    this.onAction,
   });
 
   final String title;
   final String content;
   final String emptyText;
+  final String? actionLabel;
+  final Future<void> Function()? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -625,7 +788,21 @@ class _TextCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleLarge),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                ),
+                if (actionLabel != null && onAction != null)
+                  FilledButton.tonal(
+                    onPressed: () => onAction!.call(),
+                    child: Text(actionLabel!),
+                  ),
+              ],
+            ),
             const SizedBox(height: 14),
             Expanded(
               child: SingleChildScrollView(
@@ -682,11 +859,32 @@ String _mapError(AppStrings strings, String error) {
   switch (error) {
     case 'missing-config':
       return strings.t('missingConfig');
+    case 'missing-import-config':
+      return strings.t('missingImportConfig');
     case 'missing-model':
       return strings.t('missingModel');
     case 'missing-microphone-permission':
       return strings.t('microphonePermission');
+    case 'no-transcript-yet':
+      return strings.t('noTranscriptYet');
     default:
       return error;
+  }
+}
+
+String _statusLabel(AppStrings strings, String status) {
+  switch (status) {
+    case 'recording':
+      return strings.t('recording');
+    case 'transcribing':
+      return strings.t('transcribing');
+    case 'ready':
+      return strings.t('ready');
+    case 'idle':
+      return strings.t('idle');
+    case 'downloading':
+      return strings.t('download');
+    default:
+      return status;
   }
 }

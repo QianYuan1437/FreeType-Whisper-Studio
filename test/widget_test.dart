@@ -4,7 +4,9 @@ import 'package:freetype/src/app.dart';
 import 'package:freetype/src/controller/app_controller.dart';
 
 void main() {
-  testWidgets('App boots and shows FreeType shell', (WidgetTester tester) async {
+  testWidgets('App boots and shows FreeType shell', (
+    WidgetTester tester,
+  ) async {
     final controller = AppController()
       ..isReady = true
       ..status = 'Ready';

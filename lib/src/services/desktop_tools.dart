@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -96,6 +97,27 @@ class DesktopTools {
     return outFile;
   }
 
+  Future<File> createWaveFileFromPcm({
+    required List<int> pcmBytes,
+    int sampleRate = 16000,
+    int channels = 1,
+  }) async {
+    final tempDir = await getTemporaryDirectory();
+    final output = File(
+      p.join(
+        tempDir.path,
+        'freetype_stream_${DateTime.now().microsecondsSinceEpoch}.wav',
+      ),
+    );
+    final bytes = _buildWaveBytes(
+      pcmBytes: pcmBytes,
+      sampleRate: sampleRate,
+      channels: channels,
+    );
+    await output.writeAsBytes(bytes, flush: true);
+    return output;
+  }
+
   Future<String> transcribeAudio({
     required String whisperPath,
     required String modelPath,
@@ -107,22 +129,22 @@ class DesktopTools {
       tempDir.path,
       'whisper_${DateTime.now().microsecondsSinceEpoch}',
     );
-    final result = await Process.run(whisperPath, [
+    final args = <String>[
       '-m',
       modelPath,
       '-f',
       audioPath,
-      '-l',
-      language,
+      if (language != 'auto') ...['-l', language],
       '-otxt',
       '-of',
       base,
-    ]);
+    ];
+    final result = await Process.run(whisperPath, args);
 
     if (result.exitCode != 0) {
       throw ProcessException(
         whisperPath,
-        const [],
+        args,
         '${result.stderr}',
         result.exitCode,
       );
@@ -133,7 +155,10 @@ class DesktopTools {
       return txtFile.readAsString();
     }
 
-    return utf8.decode(result.stdout is List<int> ? result.stdout : const []);
+    if (result.stdout is List<int>) {
+      return utf8.decode(result.stdout as List<int>);
+    }
+    return '${result.stdout}';
   }
 
   Future<File> saveMarkdown({
@@ -143,5 +168,47 @@ class DesktopTools {
     final file = File(outputPath);
     await file.writeAsString(content);
     return file;
+  }
+
+  List<int> _buildWaveBytes({
+    required List<int> pcmBytes,
+    required int sampleRate,
+    required int channels,
+  }) {
+    const bitsPerSample = 16;
+    final byteRate = sampleRate * channels * bitsPerSample ~/ 8;
+    final blockAlign = channels * bitsPerSample ~/ 8;
+    final totalSize = 44 + pcmBytes.length;
+    final bytes = BytesBuilder(copy: false);
+
+    void writeString(String value) {
+      bytes.add(ascii.encode(value));
+    }
+
+    void writeUint32(int value) {
+      final data = ByteData(4)..setUint32(0, value, Endian.little);
+      bytes.add(data.buffer.asUint8List());
+    }
+
+    void writeUint16(int value) {
+      final data = ByteData(2)..setUint16(0, value, Endian.little);
+      bytes.add(data.buffer.asUint8List());
+    }
+
+    writeString('RIFF');
+    writeUint32(totalSize - 8);
+    writeString('WAVE');
+    writeString('fmt ');
+    writeUint32(16);
+    writeUint16(1);
+    writeUint16(channels);
+    writeUint32(sampleRate);
+    writeUint32(byteRate);
+    writeUint16(blockAlign);
+    writeUint16(bitsPerSample);
+    writeString('data');
+    writeUint32(pcmBytes.length);
+    bytes.add(pcmBytes);
+    return bytes.toBytes();
   }
 }

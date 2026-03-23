@@ -11,6 +11,8 @@ import '../services/desktop_tools.dart';
 import '../services/live_transcriber.dart';
 
 class AppController extends ChangeNotifier {
+  AppController();
+
   final DesktopTools _tools = DesktopTools();
   LiveTranscriber? _liveTranscriber;
 
@@ -19,14 +21,17 @@ class AppController extends ChangeNotifier {
   bool isReady = false;
   bool isBusy = false;
   bool isListening = false;
-  String status = '';
+  String status = 'ready';
   String transcript = '';
   String markdown = '';
+  String latestSegment = '';
   String whisperExecutable = '';
   String ffmpegExecutable = '';
   String modelDirectory = '';
   String selectedModelPath = '';
   String modelFilter = 'all';
+  String dictationLanguage = 'auto';
+  String latencyPreset = 'steady';
   double downloadProgress = 0;
 
   Future<void> initialize() async {
@@ -39,7 +44,9 @@ class AppController extends ChangeNotifier {
         prefs.getString('modelDirectory') ??
         await _tools.defaultModelDirectory();
     selectedModelPath = prefs.getString('selectedModelPath') ?? '';
-    status = 'Ready';
+    dictationLanguage = prefs.getString('dictationLanguage') ?? 'auto';
+    latencyPreset = prefs.getString('latencyPreset') ?? 'steady';
+    status = 'ready';
     _liveTranscriber = LiveTranscriber(_tools);
     isReady = true;
     notifyListeners();
@@ -53,6 +60,8 @@ class AppController extends ChangeNotifier {
     await prefs.setString('ffmpegExecutable', ffmpegExecutable);
     await prefs.setString('modelDirectory', modelDirectory);
     await prefs.setString('selectedModelPath', selectedModelPath);
+    await prefs.setString('dictationLanguage', dictationLanguage);
+    await prefs.setString('latencyPreset', latencyPreset);
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -69,6 +78,18 @@ class AppController extends ChangeNotifier {
 
   void setModelFilter(String value) {
     modelFilter = value;
+    notifyListeners();
+  }
+
+  void setDictationLanguage(String value) {
+    dictationLanguage = value;
+    _persist();
+    notifyListeners();
+  }
+
+  void setLatencyPreset(String value) {
+    latencyPreset = value;
+    _persist();
     notifyListeners();
   }
 
@@ -135,7 +156,7 @@ class AppController extends ChangeNotifier {
     }
     isBusy = true;
     downloadProgress = 0;
-    status = 'Downloading ${model.label}';
+    status = 'downloading';
     notifyListeners();
     try {
       final file = await _tools.downloadModel(
@@ -147,7 +168,7 @@ class AppController extends ChangeNotifier {
         },
       );
       selectedModelPath = file.path;
-      status = 'Model ready';
+      status = 'ready';
       await _persist();
       return null;
     } catch (error) {
@@ -160,9 +181,7 @@ class AppController extends ChangeNotifier {
   }
 
   Future<String?> startLiveTranscription() async {
-    if (whisperExecutable.isEmpty ||
-        ffmpegExecutable.isEmpty ||
-        modelDirectory.isEmpty) {
+    if (whisperExecutable.isEmpty || modelDirectory.isEmpty) {
       return 'missing-config';
     }
     if (selectedModelPath.isEmpty || !File(selectedModelPath).existsSync()) {
@@ -173,15 +192,17 @@ class AppController extends ChangeNotifier {
     }
 
     isListening = true;
-    status = 'Listening';
+    status = 'recording';
     notifyListeners();
 
     _liveTranscriber!
         .start(
           whisperPath: whisperExecutable,
           modelPath: selectedModelPath,
+          profile: _profileForPreset(latencyPreset),
           onSegment: (text) {
-            transcript = transcript.isEmpty ? text : '$transcript $text';
+            latestSegment = text;
+            transcript = _mergeTranscript(transcript, text);
             markdown = _buildMarkdown();
             notifyListeners();
           },
@@ -190,28 +211,52 @@ class AppController extends ChangeNotifier {
             notifyListeners();
           },
         )
-        .whenComplete(() {
+        .catchError((Object error) {
+          status = '$error';
           isListening = false;
-          status = 'Idle';
           notifyListeners();
+        })
+        .whenComplete(() {
+          if (!isListening) {
+            status = 'idle';
+            notifyListeners();
+          }
         });
 
     return null;
   }
 
   Future<void> stopLiveTranscription() async {
-    await _liveTranscriber?.stop();
+    await _liveTranscriber?.stop(
+      whisperPath: whisperExecutable,
+      modelPath: selectedModelPath,
+      language: dictationLanguage,
+      onSegment: (text) {
+        latestSegment = text;
+        transcript = _mergeTranscript(transcript, text);
+        markdown = _buildMarkdown();
+        notifyListeners();
+      },
+      onStatus: (value) {
+        status = value;
+        notifyListeners();
+      },
+    );
     isListening = false;
-    status = 'Idle';
+    status = 'idle';
     notifyListeners();
   }
 
   Future<String?> importVideoAndTranscribe() async {
     if (whisperExecutable.isEmpty ||
         ffmpegExecutable.isEmpty ||
-        selectedModelPath.isEmpty) {
-      return 'missing-config';
+        modelDirectory.isEmpty) {
+      return 'missing-import-config';
     }
+    if (selectedModelPath.isEmpty || !File(selectedModelPath).existsSync()) {
+      return 'missing-model';
+    }
+
     final result = await FilePicker.platform.pickFiles(
       dialogTitle: 'Pick a video file',
       allowMultiple: false,
@@ -224,7 +269,7 @@ class AppController extends ChangeNotifier {
     }
 
     isBusy = true;
-    status = 'Importing video';
+    status = 'transcribing';
     notifyListeners();
     try {
       final audio = await _tools.extractAudioFromVideo(
@@ -235,28 +280,15 @@ class AppController extends ChangeNotifier {
         whisperPath: whisperExecutable,
         modelPath: selectedModelPath,
         audioPath: audio.path,
+        language: dictationLanguage,
       );
       transcript = text.trim();
+      latestSegment = transcript;
       markdown = _buildMarkdown(source: p.basename(videoPath));
-      final outputPath = await FilePicker.platform.saveFile(
-        dialogTitle: 'Save Markdown',
-        fileName: '${p.basenameWithoutExtension(videoPath)}.md',
-        type: FileType.custom,
-        allowedExtensions: const ['md'],
+      await saveMarkdown(
+        defaultFileName: '${p.basenameWithoutExtension(videoPath)}.md',
       );
-      if (outputPath != null) {
-        await _tools.saveMarkdown(outputPath: outputPath, content: markdown);
-      } else {
-        final docs = await getApplicationDocumentsDirectory();
-        await _tools.saveMarkdown(
-          outputPath: p.join(
-            docs.path,
-            '${p.basenameWithoutExtension(videoPath)}.md',
-          ),
-          content: markdown,
-        );
-      }
-      status = 'Video transcription completed';
+      status = 'ready';
       return null;
     } catch (error) {
       status = '$error';
@@ -267,6 +299,106 @@ class AppController extends ChangeNotifier {
     }
   }
 
+  Future<String?> saveMarkdown({
+    String defaultFileName = 'freetype-notes.md',
+  }) async {
+    if (markdown.trim().isEmpty) {
+      return 'no-transcript-yet';
+    }
+    final outputPath = await FilePicker.platform.saveFile(
+      dialogTitle: 'Save Markdown',
+      fileName: defaultFileName,
+      type: FileType.custom,
+      allowedExtensions: const ['md'],
+    );
+    final target = outputPath ?? await _fallbackMarkdownPath(defaultFileName);
+    try {
+      await _tools.saveMarkdown(outputPath: target, content: markdown);
+      return null;
+    } catch (error) {
+      return '$error';
+    }
+  }
+
+  Future<String> _fallbackMarkdownPath(String defaultFileName) async {
+    final docs = await getApplicationDocumentsDirectory();
+    return p.join(docs.path, defaultFileName);
+  }
+
+  LiveDictationProfile _profileForPreset(String preset) {
+    switch (preset) {
+      case 'fast':
+        return LiveDictationProfile(
+          stepDuration: const Duration(seconds: 2),
+          windowDuration: const Duration(seconds: 4),
+          language: dictationLanguage,
+        );
+      case 'precise':
+        return LiveDictationProfile(
+          stepDuration: const Duration(seconds: 4),
+          windowDuration: const Duration(seconds: 8),
+          language: dictationLanguage,
+        );
+      default:
+        return LiveDictationProfile(
+          stepDuration: const Duration(seconds: 3),
+          windowDuration: const Duration(seconds: 6),
+          language: dictationLanguage,
+        );
+    }
+  }
+
+  String _mergeTranscript(String existing, String incoming) {
+    final normalizedExisting = _normalizeForMerge(existing);
+    final normalizedIncoming = _normalizeForMerge(incoming);
+    if (normalizedIncoming.isEmpty) {
+      return existing;
+    }
+    if (normalizedExisting.isEmpty) {
+      return incoming.trim();
+    }
+    if (normalizedExisting.endsWith(normalizedIncoming)) {
+      return existing.trim();
+    }
+
+    final existingWords = normalizedExisting.split(' ');
+    final incomingWords = normalizedIncoming.split(' ');
+    var overlap = 0;
+    final maxOverlap = existingWords.length < incomingWords.length
+        ? existingWords.length
+        : incomingWords.length;
+
+    for (var count = maxOverlap; count > 0; count--) {
+      final existingTail = existingWords
+          .sublist(existingWords.length - count)
+          .join(' ');
+      final incomingHead = incomingWords.sublist(0, count).join(' ');
+      if (existingTail == incomingHead) {
+        overlap = count;
+        break;
+      }
+    }
+
+    if (overlap == incomingWords.length) {
+      return existing.trim();
+    }
+
+    final suffix = incomingWords.sublist(overlap).join(' ');
+    if (suffix.isEmpty) {
+      return existing.trim();
+    }
+    return '${existing.trim()} $suffix'.trim();
+  }
+
+  String _normalizeForMerge(String value) {
+    return value
+        .toLowerCase()
+        .replaceAll(RegExp(r'[\r\n]+'), ' ')
+        .replaceAll(RegExp(r'[^\p{L}\p{N}\s]+', unicode: true), ' ')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
+  }
+
   String _buildMarkdown({String? source}) {
     final stamp = DateTime.now().toLocal().toIso8601String();
     final heading = source ?? 'Live dictation';
@@ -275,6 +407,8 @@ class AppController extends ChangeNotifier {
       '',
       '- Generated: $stamp',
       '- Model: ${selectedModelPath.isEmpty ? 'Unselected' : p.basename(selectedModelPath)}',
+      '- Language: $dictationLanguage',
+      '- Latency: $latencyPreset',
       '',
       '## Transcript',
       '',
