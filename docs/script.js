@@ -1,0 +1,164 @@
+﻿const translations = {
+  zh: {
+    viewSource: '\u67e5\u770b\u6e90\u7801',
+    eyebrow: 'Local-first Whisper workflow',
+    heroTitle:
+      '\u8ba9\u672c\u5730 GPU \u542c\u5199\u3001\u8f6c\u5f55\u4e0e Markdown \u8bb0\u5f55\uff0c\u843d\u5728\u540c\u4e00\u4e2a\u684c\u9762\u7a7a\u95f4\u91cc\u3002',
+    heroText:
+      'FreeType Whisper Studio \u9762\u5411 Windows \u4e0e Linux\uff0c\u652f\u6301\u5b9e\u65f6\u542c\u5199\u3001\u6a21\u578b\u7ba1\u7406\u3001\u89c6\u9891\u8f6c\u6587\u672c\u3001\u53cc\u8bed\u754c\u9762\u4e0e\u6df1\u6d45\u8272\u5207\u6362\uff0c\u6574\u4e2a\u6d41\u7a0b\u4fdd\u6301\u672c\u5730\u4f18\u5148\u3002',
+    primaryCta: '\u6253\u5f00 GitHub',
+    secondaryCta: '\u67e5\u770b\u529f\u80fd',
+    metricPlatform: '\u8de8\u5e73\u53f0\u684c\u9762',
+    metricRuntime: '\u672c\u5730\u8fd0\u884c\u65f6\u94fe\u8def',
+    metricExport: '\u8bb0\u5f55\u5bfc\u51fa',
+    statusListening: '\u5b9e\u65f6\u542c\u5199\u4e2d',
+    statusLocal: '\u672c\u5730\u5904\u7406',
+    stackRealtime: 'Realtime',
+    stackRealtimeText: '\u8fde\u7eed\u542c\u5199\u4e0e\u53e5\u672b\u63d0\u4ea4',
+    stackModels: 'Models',
+    stackModelsText: '\u6a21\u578b\u5927\u5c0f\u7b5b\u9009\u4e0e\u4fdd\u5b58\u76ee\u5f55',
+    stackMedia: 'Media',
+    stackMediaText: '\u89c6\u9891\u63d0\u97f3\u5e76\u5bfc\u51fa Markdown',
+    featuresEyebrow: 'Capabilities',
+    featuresTitle:
+      '\u56f4\u7ed5\u771f\u5b9e\u684c\u9762\u5de5\u4f5c\u6d41\u8bbe\u8ba1\u7684\u672c\u5730\u8bed\u97f3\u5de5\u5177',
+    feature1Title: '\u5b9e\u65f6\u8f93\u5165\u4f53\u9a8c',
+    feature1Text:
+      '\u652f\u6301\u8fde\u7eed\u542c\u5199\u3001\u589e\u91cf\u7c98\u8d34\u3001\u53e5\u672b\u63d0\u4ea4\u3001\u6574\u6bb5\u8986\u76d6\uff0c\u4ee5\u53ca\u5168\u5c40\u5feb\u6377\u952e\u63a7\u5236\u3002',
+    feature2Title: '\u6a21\u578b\u4e0e\u8fd0\u884c\u65f6\u7ba1\u7406',
+    feature2Text:
+      '\u53ef\u914d\u7f6e Whisper \u53ef\u6267\u884c\u6587\u4ef6\u3001\u989d\u5916 GPU \u53c2\u6570\u3001\u6a21\u578b\u4e0b\u8f7d\u63d0\u9192\u3001\u6a21\u578b\u5927\u5c0f\u7b5b\u9009\u4e0e\u5b58\u50a8\u76ee\u5f55\u3002',
+    feature3Title: '\u89c6\u9891\u5230\u7b14\u8bb0',
+    feature3Text:
+      '\u5bfc\u5165\u89c6\u9891\u540e\u81ea\u52a8\u63d0\u53d6\u97f3\u9891\u5e76\u8f6c\u5199\uff0c\u7ed3\u679c\u53ef\u6574\u7406\u4e3a Markdown \u8bb0\u5f55\u6587\u672c\u3002',
+    feature4Title: '\u53cc\u8bed\u4e0e\u4e3b\u9898',
+    feature4Text:
+      '\u5e94\u7528\u4e0e Pages \u90fd\u63d0\u4f9b\u4e2d\u82f1\u6587\u5207\u6362\uff0c\u4ee5\u53ca\u660e\u4eae\u4e0e\u6697\u8272\u663e\u793a\u6a21\u5f0f\u3002',
+    workflowEyebrow: 'Workflow',
+    workflowTitle:
+      '\u4ece\u6a21\u578b\u51c6\u5907\u5230\u6587\u7a3f\u5bfc\u51fa\uff0c\u94fe\u8def\u4fdd\u6301\u6e05\u6670',
+    step1Title: '\u914d\u7f6e\u672c\u5730\u8fd0\u884c\u73af\u5883',
+    step1Text:
+      '\u6307\u5b9a Whisper \u517c\u5bb9\u53ef\u6267\u884c\u6587\u4ef6\u3001FFmpeg \u8def\u5f84\u548c\u6a21\u578b\u76ee\u5f55\u3002',
+    step2Title: '\u9009\u62e9\u5408\u9002\u6a21\u578b',
+    step2Text:
+      '\u5728\u4e0b\u8f7d\u524d\u6536\u5230\u63d0\u9192\uff0c\u5e76\u6839\u636e\u5927\u5c0f\u7b5b\u9009\u6a21\u578b\u540e\u4fdd\u5b58\u5230\u81ea\u5b9a\u4e49\u4f4d\u7f6e\u3002',
+    step3Title: '\u5f00\u59cb\u542c\u5199\u6216\u5bfc\u5165\u89c6\u9891',
+    step3Text:
+      '\u652f\u6301\u5b9e\u65f6\u9ea6\u514b\u98ce\u542c\u5199\uff0c\u4e5f\u652f\u6301\u4ece\u89c6\u9891\u4e2d\u63d0\u53d6\u97f3\u9891\u8fdb\u884c\u8f6c\u5f55\u3002',
+    step4Title: '\u8f93\u51fa\u4e0e\u6574\u7406\u6587\u672c',
+    step4Text:
+      '\u53ef\u5c06\u7ed3\u679c\u81ea\u52a8\u7c98\u8d34\u5230\u5f53\u524d\u8f93\u5165\u6846\uff0c\u6216\u5bfc\u51fa\u4e3a Markdown \u7b14\u8bb0\u3002',
+    runtimeEyebrow: 'Runtime',
+    runtimeTitle:
+      '\u4f60\u63d0\u4f9b\u672c\u5730\u5f15\u64ce\uff0c\u5e94\u7528\u8d1f\u8d23\u4ea4\u4e92\u5c42',
+    runtimeText:
+      '\u5e94\u7528\u4e0d\u4f1a\u628a\u8bed\u97f3\u53d1\u9001\u5230\u4e91\u7aef\u3002\u5b83\u8c03\u7528\u4f60\u672c\u673a\u4e0a\u7684 Whisper \u517c\u5bb9\u53ef\u6267\u884c\u6587\u4ef6\u4e0e FFmpeg\uff0c\u5e76\u6cbf\u7528\u8fd9\u4e9b\u5de5\u5177\u81ea\u8eab\u7684 GPU \u80fd\u529b\u3002',
+    licenseEyebrow: 'License',
+    licenseTitle:
+      '\u4e0e Whisper \u751f\u6001\u4fdd\u6301\u4e00\u81f4\u7684\u5f00\u6e90\u8bb8\u53ef',
+    licenseText:
+      '\u9879\u76ee\u5f53\u524d\u91c7\u7528 MIT License\uff0c\u4ee5\u4fdd\u6301\u548c Whisper \u9879\u76ee\u5bb6\u65cf\u53ca\u5e38\u89c1\u517c\u5bb9\u8fd0\u884c\u65f6\u7684\u4e00\u81f4\u6027\u3002',
+    ctaEyebrow: 'GitHub Pages',
+    ctaTitle:
+      '\u628a\u4ed3\u5e93\u7684 `docs/` \u76ee\u5f55\u76f4\u63a5\u53d1\u5e03\u6210\u4ea7\u54c1\u4e3b\u9875',
+    ctaText:
+      '\u5728 GitHub \u4ed3\u5e93\u8bbe\u7f6e\u91cc\u628a Pages Source \u6307\u5411 `Deploy from a branch` \u4e0e `main / docs`\uff0c\u5c31\u53ef\u4ee5\u7528\u8fd9\u5957\u9875\u9762\u4f5c\u4e3a\u516c\u5f00\u5c55\u793a\u7ad9\u70b9\u3002',
+    ctaButton: '\u524d\u5f80 Pages \u8bbe\u7f6e'
+  },
+  en: {
+    viewSource: 'View source',
+    eyebrow: 'Local-first Whisper workflow',
+    heroTitle: 'Bring local GPU dictation, transcription, and Markdown capture into one desktop space.',
+    heroText:
+      'FreeType Whisper Studio targets Windows and Linux with live dictation, model management, video-to-text workflows, bilingual UI, and light or dark themes, all in a local-first pipeline.',
+    primaryCta: 'Open GitHub',
+    secondaryCta: 'Explore features',
+    metricPlatform: 'Cross-platform desktop',
+    metricRuntime: 'Local runtime pipeline',
+    metricExport: 'Markdown export',
+    statusListening: 'Live dictation',
+    statusLocal: 'Processed locally',
+    stackRealtime: 'Realtime',
+    stackRealtimeText: 'Continuous dictation with sentence-final commit',
+    stackModels: 'Models',
+    stackModelsText: 'Model size filtering and custom storage',
+    stackMedia: 'Media',
+    stackMediaText: 'Extract audio from video and export Markdown',
+    featuresEyebrow: 'Capabilities',
+    featuresTitle: 'A local speech tool built around real desktop workflows',
+    feature1Title: 'Live input experience',
+    feature1Text:
+      'Supports continuous dictation, incremental paste, sentence-final commit, full replacement, and global hotkeys.',
+    feature2Title: 'Model and runtime management',
+    feature2Text:
+      'Configure the Whisper executable, extra GPU flags, model download reminders, size filters, and storage directories.',
+    feature3Title: 'Video to notes',
+    feature3Text:
+      'Import a video, extract its audio, transcribe it locally, and turn the result into Markdown notes.',
+    feature4Title: 'Language and theme',
+    feature4Text:
+      'Both the app and the GitHub Pages site support Chinese and English, plus light and dark presentation modes.',
+    workflowEyebrow: 'Workflow',
+    workflowTitle: 'A clear path from model setup to exported writing',
+    step1Title: 'Set up local tools',
+    step1Text: 'Point the app at a Whisper-compatible executable, FFmpeg, and your model directory.',
+    step2Title: 'Choose the right model',
+    step2Text: 'Get a reminder before downloads, filter models by size, and store them wherever you prefer.',
+    step3Title: 'Start dictation or import video',
+    step3Text: 'Use live microphone dictation or extract audio from a video for local transcription.',
+    step4Title: 'Export and organize text',
+    step4Text: 'Paste directly into the active input or export the transcript as Markdown notes.',
+    runtimeEyebrow: 'Runtime',
+    runtimeTitle: 'You bring the local engine, the app handles the workflow layer',
+    runtimeText:
+      'The app does not send audio to the cloud. It calls your local Whisper-compatible executable and FFmpeg, and uses whatever GPU support those tools already provide.',
+    licenseEyebrow: 'License',
+    licenseTitle: 'An open-source license aligned with the Whisper ecosystem',
+    licenseText:
+      'The project currently uses the MIT License to stay aligned with the Whisper project family and common compatible runtimes.',
+    ctaEyebrow: 'GitHub Pages',
+    ctaTitle: 'Publish the repository `docs/` folder directly as a product site',
+    ctaText:
+      'In your GitHub repository settings, set Pages Source to `Deploy from a branch` and choose `main / docs` to publish this site.',
+    ctaButton: 'Open Pages settings'
+  }
+};
+
+const root = document.documentElement;
+const langButton = document.getElementById('lang-toggle');
+const themeButton = document.getElementById('theme-toggle');
+
+const savedLanguage = localStorage.getItem('freetype-pages-lang') || 'zh';
+const savedTheme = localStorage.getItem('freetype-pages-theme') || 'light';
+
+function applyLanguage(language) {
+  const locale = translations[language] ? language : 'zh';
+  document.documentElement.lang = locale === 'zh' ? 'zh-CN' : 'en';
+  document.querySelectorAll('[data-i18n]').forEach((node) => {
+    const key = node.dataset.i18n;
+    node.textContent = translations[locale][key] || '';
+  });
+  langButton.textContent = locale === 'zh' ? 'EN' : '\u4e2d\u6587';
+  localStorage.setItem('freetype-pages-lang', locale);
+}
+
+function applyTheme(theme) {
+  const nextTheme = theme === 'dark' ? 'dark' : 'light';
+  root.setAttribute('data-theme', nextTheme);
+  themeButton.textContent = nextTheme === 'dark' ? 'Light' : 'Dark';
+  localStorage.setItem('freetype-pages-theme', nextTheme);
+}
+
+langButton.addEventListener('click', () => {
+  const current = localStorage.getItem('freetype-pages-lang') || 'zh';
+  applyLanguage(current === 'zh' ? 'en' : 'zh');
+});
+
+themeButton.addEventListener('click', () => {
+  const current = root.getAttribute('data-theme') || 'light';
+  applyTheme(current === 'light' ? 'dark' : 'light');
+});
+
+applyLanguage(savedLanguage);
+applyTheme(savedTheme);

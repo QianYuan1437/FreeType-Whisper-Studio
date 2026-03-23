@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FreeType Whisper Studio</title>
+    <meta
+      name="description"
+      content="FreeType Whisper Studio is a local-first Whisper desktop app with live dictation, Markdown export, model management, and GitHub Pages support."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="site-shell">
+      <div class="aurora aurora-a"></div>
+      <div class="aurora aurora-b"></div>
+      <header class="topbar glass-card">
+        <a class="brand" href="#top" aria-label="FreeType Whisper Studio">
+          <span class="brand-mark">FT</span>
+          <span class="brand-text">FreeType Whisper Studio</span>
+        </a>
+        <nav class="topbar-actions">
+          <button class="pill-button" id="lang-toggle" type="button">EN</button>
+          <button class="pill-button" id="theme-toggle" type="button">Dark</button>
+          <a
+            class="pill-button pill-button-link"
+            href="https://github.com/QianYuan1437/FreeType-Whisper-Studio"
+            target="_blank"
+            rel="noreferrer"
+            data-i18n="viewSource"
+            >View source</a
+          >
+        </nav>
+      </header>
+
+      <main id="top">
+        <section class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow" data-i18n="eyebrow">Local-first Whisper workflow</div>
+            <h1 data-i18n="heroTitle">
+              Bring local GPU dictation, transcription, and Markdown capture into one desktop space.
+            </h1>
+            <p class="hero-text" data-i18n="heroText">
+              FreeType Whisper Studio targets Windows and Linux with live dictation, model management, video-to-text workflows, bilingual UI, and light or dark themes, all in a local-first pipeline.
+            </p>
+            <div class="hero-actions">
+              <a
+                class="primary-button"
+                href="https://github.com/QianYuan1437/FreeType-Whisper-Studio"
+                target="_blank"
+                rel="noreferrer"
+                data-i18n="primaryCta"
+                >Open GitHub</a
+              >
+              <a class="secondary-button" href="#features" data-i18n="secondaryCta"
+                >Explore features</a
+              >
+            </div>
+            <div class="hero-metrics">
+              <div class="metric glass-card">
+                <span class="metric-value">Windows + Linux</span>
+                <span class="metric-label" data-i18n="metricPlatform">Cross-platform desktop</span>
+              </div>
+              <div class="metric glass-card">
+                <span class="metric-value">Whisper + FFmpeg</span>
+                <span class="metric-label" data-i18n="metricRuntime">Local runtime pipeline</span>
+              </div>
+              <div class="metric glass-card">
+                <span class="metric-value">Markdown</span>
+                <span class="metric-label" data-i18n="metricExport">Markdown export</span>
+              </div>
+            </div>
+          </div>
+          <div class="hero-panel glass-card">
+            <div class="panel-header">
+              <span class="panel-dot"></span>
+              <span class="panel-dot"></span>
+              <span class="panel-dot"></span>
+            </div>
+            <div class="signal-grid">
+              <div class="signal-bar"></div>
+              <div class="signal-bar signal-mid"></div>
+              <div class="signal-bar signal-high"></div>
+              <div class="signal-bar signal-mid"></div>
+              <div class="signal-bar"></div>
+            </div>
+            <div class="status-line">
+              <span class="status-chip" data-i18n="statusListening">Live dictation</span>
+              <span class="status-chip status-chip-muted" data-i18n="statusLocal"
+                >Processed locally</span
+              >
+            </div>
+            <div class="transcript-card">
+              <div class="transcript-line transcript-line-strong"></div>
+              <div class="transcript-line"></div>
+              <div class="transcript-line transcript-line-short"></div>
+            </div>
+            <div class="feature-stack">
+              <div class="stack-item">
+                <span class="stack-kicker" data-i18n="stackRealtime">Realtime</span>
+                <strong data-i18n="stackRealtimeText"
+                  >Continuous dictation with sentence-final commit</strong
+                >
+              </div>
+              <div class="stack-item">
+                <span class="stack-kicker" data-i18n="stackModels">Models</span>
+                <strong data-i18n="stackModelsText">Model size filtering and custom storage</strong>
+              </div>
+              <div class="stack-item">
+                <span class="stack-kicker" data-i18n="stackMedia">Media</span>
+                <strong data-i18n="stackMediaText">Extract audio from video and export Markdown</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="section" id="features">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="featuresEyebrow">Capabilities</p>
+            <h2 data-i18n="featuresTitle">A local speech tool built around real desktop workflows</h2>
+          </div>
+          <div class="feature-grid">
+            <article class="feature-card glass-card">
+              <h3 data-i18n="feature1Title">Live input experience</h3>
+              <p data-i18n="feature1Text">
+                Supports continuous dictation, incremental paste, sentence-final commit, full replacement, and global hotkeys.
+              </p>
+            </article>
+            <article class="feature-card glass-card">
+              <h3 data-i18n="feature2Title">Model and runtime management</h3>
+              <p data-i18n="feature2Text">
+                Configure the Whisper executable, extra GPU flags, model download reminders, size filters, and storage directories.
+              </p>
+            </article>
+            <article class="feature-card glass-card">
+              <h3 data-i18n="feature3Title">Video to notes</h3>
+              <p data-i18n="feature3Text">
+                Import a video, extract its audio, transcribe it locally, and turn the result into Markdown notes.
+              </p>
+            </article>
+            <article class="feature-card glass-card">
+              <h3 data-i18n="feature4Title">Language and theme</h3>
+              <p data-i18n="feature4Text">
+                Both the app and the GitHub Pages site support Chinese and English, plus light and dark presentation modes.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section section-alt">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="workflowEyebrow">Workflow</p>
+            <h2 data-i18n="workflowTitle">A clear path from model setup to exported writing</h2>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item glass-card">
+              <span class="timeline-index">01</span>
+              <h3 data-i18n="step1Title">Set up local tools</h3>
+              <p data-i18n="step1Text">
+                Point the app at a Whisper-compatible executable, FFmpeg, and your model directory.
+              </p>
+            </div>
+            <div class="timeline-item glass-card">
+              <span class="timeline-index">02</span>
+              <h3 data-i18n="step2Title">Choose the right model</h3>
+              <p data-i18n="step2Text">
+                Get a reminder before downloads, filter models by size, and store them wherever you prefer.
+              </p>
+            </div>
+            <div class="timeline-item glass-card">
+              <span class="timeline-index">03</span>
+              <h3 data-i18n="step3Title">Start dictation or import video</h3>
+              <p data-i18n="step3Text">
+                Use live microphone dictation or extract audio from a video for local transcription.
+              </p>
+            </div>
+            <div class="timeline-item glass-card">
+              <span class="timeline-index">04</span>
+              <h3 data-i18n="step4Title">Export and organize text</h3>
+              <p data-i18n="step4Text">
+                Paste directly into the active input or export the transcript as Markdown notes.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="dual-panel">
+            <article class="info-panel glass-card">
+              <p class="eyebrow" data-i18n="runtimeEyebrow">Runtime</p>
+              <h2 data-i18n="runtimeTitle">
+                You bring the local engine, the app handles the workflow layer
+              </h2>
+              <p data-i18n="runtimeText">
+                The app does not send audio to the cloud. It calls your local Whisper-compatible executable and FFmpeg, and uses whatever GPU support those tools already provide.
+              </p>
+            </article>
+            <article class="info-panel glass-card">
+              <p class="eyebrow" data-i18n="licenseEyebrow">License</p>
+              <h2 data-i18n="licenseTitle">
+                An open-source license aligned with the Whisper ecosystem
+              </h2>
+              <p data-i18n="licenseText">
+                The project currently uses the MIT License to stay aligned with the Whisper project family and common compatible runtimes.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="cta-card glass-card">
+            <p class="eyebrow" data-i18n="ctaEyebrow">GitHub Pages</p>
+            <h2 data-i18n="ctaTitle">Publish the repository `docs/` folder directly as a product site</h2>
+            <p data-i18n="ctaText">
+              In your GitHub repository settings, set Pages Source to `Deploy from a branch` and choose `main / docs` to publish this site.
+            </p>
+            <a
+              class="primary-button"
+              href="https://github.com/QianYuan1437/FreeType-Whisper-Studio/settings/pages"
+              target="_blank"
+              rel="noreferrer"
+              data-i18n="ctaButton"
+              >Open Pages settings</a
+            >
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./script.js"></script>
+  </body>
+</html>
