@@ -7,22 +7,25 @@ class DesktopAutomation {
     await Clipboard.setData(ClipboardData(text: text));
   }
 
-  Future<String?> pasteTextIntoActiveInput(String text) async {
+  Future<String?> pasteTextIntoActiveInput(
+    String text, {
+    bool replaceAll = false,
+  }) async {
     if (text.trim().isEmpty) {
       return null;
     }
 
     await copyText(text);
     if (Platform.isWindows) {
-      return _sendWindowsPaste();
+      return _sendWindowsPaste(replaceAll: replaceAll);
     }
     if (Platform.isLinux) {
-      return _sendLinuxPaste();
+      return _sendLinuxPaste(replaceAll: replaceAll);
     }
     return 'Auto paste is only available on Windows and Linux.';
   }
 
-  Future<String?> _sendWindowsPaste() async {
+  Future<String?> _sendWindowsPaste({required bool replaceAll}) async {
     final result = await Process.run('powershell', [
       '-NoProfile',
       '-Command',
@@ -36,8 +39,21 @@ public static class NativeKeyboard {
 }
 "@;
 $VK_CONTROL = 0x11;
+$VK_A = 0x41;
 $VK_V = 0x56;
 $KEYEVENTF_KEYUP = 0x0002;
+''' +
+          (replaceAll
+              ? r'''
+[NativeKeyboard]::keybd_event($VK_CONTROL, 0, 0, 0);
+[NativeKeyboard]::keybd_event($VK_A, 0, 0, 0);
+Start-Sleep -Milliseconds 40;
+[NativeKeyboard]::keybd_event($VK_A, 0, $KEYEVENTF_KEYUP, 0);
+[NativeKeyboard]::keybd_event($VK_CONTROL, 0, $KEYEVENTF_KEYUP, 0);
+Start-Sleep -Milliseconds 40;
+'''
+              : '') +
+          r'''
 [NativeKeyboard]::keybd_event($VK_CONTROL, 0, 0, 0);
 [NativeKeyboard]::keybd_event($VK_V, 0, 0, 0);
 Start-Sleep -Milliseconds 40;
@@ -52,10 +68,12 @@ Start-Sleep -Milliseconds 40;
     return null;
   }
 
-  Future<String?> _sendLinuxPaste() async {
+  Future<String?> _sendLinuxPaste({required bool replaceAll}) async {
     final result = await Process.run('bash', [
       '-lc',
-      'if command -v xdotool >/dev/null 2>&1; then xdotool key --clearmodifiers ctrl+v; else exit 127; fi',
+      replaceAll
+          ? 'if command -v xdotool >/dev/null 2>&1; then xdotool key --clearmodifiers ctrl+a; sleep 0.05; xdotool key --clearmodifiers ctrl+v; else exit 127; fi'
+          : 'if command -v xdotool >/dev/null 2>&1; then xdotool key --clearmodifiers ctrl+v; else exit 127; fi',
     ]);
 
     if (result.exitCode == 127) {

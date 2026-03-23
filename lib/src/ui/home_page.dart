@@ -529,6 +529,25 @@ class _AutomationCard extends StatelessWidget {
                 controller.setGlobalHotkeysEnabled(value);
               },
             ),
+            const SizedBox(height: 10),
+            Text(strings.t('pasteMode')),
+            const SizedBox(height: 10),
+            SegmentedButton<String>(
+              segments: [
+                ButtonSegment(
+                  value: 'incremental',
+                  label: Text(strings.t('pasteIncremental')),
+                ),
+                ButtonSegment(
+                  value: 'whole',
+                  label: Text(strings.t('pasteWhole')),
+                ),
+              ],
+              selected: {controller.pasteMode},
+              onSelectionChanged: (selection) {
+                controller.setPasteMode(selection.first);
+              },
+            ),
             const SizedBox(height: 8),
             _InfoRow(
               label: strings.t('toggleHotkey'),
@@ -540,6 +559,8 @@ class _AutomationCard extends StatelessWidget {
               value: strings.t('hotkeyPasteValue'),
             ),
             const SizedBox(height: 12),
+            Text(strings.t('pasteModeHint')),
+            const SizedBox(height: 8),
             Text(strings.t('automationHint')),
           ],
         ),

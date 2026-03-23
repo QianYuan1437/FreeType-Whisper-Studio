@@ -39,6 +39,7 @@ class AppController extends ChangeNotifier {
   String modelFilter = 'all';
   String dictationLanguage = 'auto';
   String latencyPreset = 'steady';
+  String pasteMode = 'incremental';
   bool autoPasteEnabled = false;
   bool copySnippetEnabled = false;
   bool globalHotkeysEnabled = true;
@@ -56,6 +57,7 @@ class AppController extends ChangeNotifier {
     selectedModelPath = prefs.getString('selectedModelPath') ?? '';
     dictationLanguage = prefs.getString('dictationLanguage') ?? 'auto';
     latencyPreset = prefs.getString('latencyPreset') ?? 'steady';
+    pasteMode = prefs.getString('pasteMode') ?? 'incremental';
     autoPasteEnabled = prefs.getBool('autoPasteEnabled') ?? false;
     copySnippetEnabled = prefs.getBool('copySnippetEnabled') ?? false;
     globalHotkeysEnabled = prefs.getBool('globalHotkeysEnabled') ?? true;
@@ -77,6 +79,7 @@ class AppController extends ChangeNotifier {
     await prefs.setString('selectedModelPath', selectedModelPath);
     await prefs.setString('dictationLanguage', dictationLanguage);
     await prefs.setString('latencyPreset', latencyPreset);
+    await prefs.setString('pasteMode', pasteMode);
     await prefs.setBool('autoPasteEnabled', autoPasteEnabled);
     await prefs.setBool('copySnippetEnabled', copySnippetEnabled);
     await prefs.setBool('globalHotkeysEnabled', globalHotkeysEnabled);
@@ -107,6 +110,12 @@ class AppController extends ChangeNotifier {
 
   void setLatencyPreset(String value) {
     latencyPreset = value;
+    unawaited(_persist());
+    notifyListeners();
+  }
+
+  void setPasteMode(String value) {
+    pasteMode = value;
     unawaited(_persist());
     notifyListeners();
   }
@@ -321,7 +330,11 @@ class AppController extends ChangeNotifier {
       await _automation.copyText(latestInsertedText);
     }
     if (autoPasteEnabled) {
-      final error = await _automation.pasteTextIntoActiveInput(latestInsertedText);
+      final pasteText = pasteMode == 'whole' ? transcript : latestInsertedText;
+      final error = await _automation.pasteTextIntoActiveInput(
+        pasteText,
+        replaceAll: pasteMode == 'whole',
+      );
       if (error != null && error.isNotEmpty) {
         status = error;
         notifyListeners();
@@ -330,11 +343,16 @@ class AppController extends ChangeNotifier {
   }
 
   Future<String?> pasteLatestText() async {
-    final text = latestInsertedText.isNotEmpty ? latestInsertedText : transcript;
+    final text = pasteMode == 'whole'
+        ? transcript
+        : (latestInsertedText.isNotEmpty ? latestInsertedText : transcript);
     if (text.trim().isEmpty) {
       return 'no-transcript-yet';
     }
-    final error = await _automation.pasteTextIntoActiveInput(text);
+    final error = await _automation.pasteTextIntoActiveInput(
+      text,
+      replaceAll: pasteMode == 'whole',
+    );
     if (error != null) {
       status = error;
       notifyListeners();
