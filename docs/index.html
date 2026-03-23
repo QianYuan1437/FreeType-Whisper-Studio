@@ -26,6 +26,9 @@
           <span class="brand-text">FreeType Whisper Studio</span>
         </a>
         <nav class="topbar-actions">
+          <a class="nav-link" href="#features" data-i18n="navFeatures">Features</a>
+          <a class="nav-link" href="#downloads" data-i18n="navDownloads">Downloads</a>
+          <a class="nav-link" href="#faq" data-i18n="navFaq">FAQ</a>
           <button class="pill-button" id="lang-toggle" type="button">EN</button>
           <button class="pill-button" id="theme-toggle" type="button">Dark</button>
           <a
@@ -153,6 +156,53 @@
           </div>
         </section>
 
+        <section class="section" id="downloads">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="downloadsEyebrow">Downloads</p>
+            <h2 data-i18n="downloadsTitle">Clear entry points from source code to desktop builds</h2>
+          </div>
+          <div class="download-grid">
+            <article class="download-card glass-card">
+              <div class="download-badge" data-i18n="windowsBadge">Windows</div>
+              <h3 data-i18n="windowsTitle">Windows desktop build</h3>
+              <p data-i18n="windowsText">
+                The project has already been verified locally with `flutter build windows`, ready for live dictation, auto paste, and model management workflows.
+              </p>
+              <a
+                class="secondary-button"
+                href="https://github.com/QianYuan1437/FreeType-Whisper-Studio"
+                target="_blank"
+                rel="noreferrer"
+                data-i18n="downloadSource"
+                >View source and artifacts</a
+              >
+            </article>
+            <article class="download-card glass-card">
+              <div class="download-badge" data-i18n="linuxBadge">Linux</div>
+              <h3 data-i18n="linuxTitle">Linux desktop build</h3>
+              <p data-i18n="linuxText">
+                The project has already been validated in WSL2 Ubuntu 24.04 with `flutter build linux`, suitable for local Linux desktop deployment.
+              </p>
+              <a
+                class="secondary-button"
+                href="https://github.com/QianYuan1437/FreeType-Whisper-Studio"
+                target="_blank"
+                rel="noreferrer"
+                data-i18n="buildGuide"
+                >Read build notes</a
+              >
+            </article>
+            <article class="download-card glass-card">
+              <div class="download-badge" data-i18n="runtimeBadge">Runtime</div>
+              <h3 data-i18n="runtimeGuideTitle">Local runtime setup</h3>
+              <p data-i18n="runtimeGuideText">
+                Before launch, configure a Whisper-compatible executable, the FFmpeg path, and a model directory. Model downloads are confirmed with reminders.
+              </p>
+              <a class="secondary-button" href="#faq" data-i18n="setupChecklist">Open setup checklist</a>
+            </article>
+          </div>
+        </section>
+
         <section class="section section-alt">
           <div class="section-heading">
             <p class="eyebrow" data-i18n="workflowEyebrow">Workflow</p>
@@ -187,6 +237,60 @@
                 Paste directly into the active input or export the transcript as Markdown notes.
               </p>
             </div>
+          </div>
+        </section>
+
+        <section class="section" id="preview">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="previewEyebrow">Preview</p>
+            <h2 data-i18n="previewTitle">Show the core interface rhythm with scene-based cards</h2>
+          </div>
+          <div class="preview-grid">
+            <article class="preview-card glass-card">
+              <div class="preview-window">
+                <div class="preview-topbar"></div>
+                <div class="preview-columns">
+                  <div class="preview-sidebar"></div>
+                  <div class="preview-content">
+                    <div class="preview-line preview-line-wide"></div>
+                    <div class="preview-line"></div>
+                    <div class="preview-line preview-line-short"></div>
+                  </div>
+                </div>
+              </div>
+              <h3 data-i18n="previewCard1Title">Live dictation panel</h3>
+              <p data-i18n="previewCard1Text">
+                Rounded status cards, flowing transcription feedback, and a layout designed for long sessions at the desktop.
+              </p>
+            </article>
+            <article class="preview-card glass-card">
+              <div class="preview-window preview-window-alt">
+                <div class="preview-chip-row">
+                  <span class="mini-chip"></span>
+                  <span class="mini-chip"></span>
+                  <span class="mini-chip"></span>
+                </div>
+                <div class="preview-file"></div>
+                <div class="preview-file preview-file-mid"></div>
+                <div class="preview-file preview-file-short"></div>
+              </div>
+              <h3 data-i18n="previewCard2Title">Model and download management</h3>
+              <p data-i18n="previewCard2Text">
+                Includes model size filtering, download confirmations, storage selection, and extra Whisper runtime arguments.
+              </p>
+            </article>
+            <article class="preview-card glass-card">
+              <div class="preview-window preview-window-terminal">
+                <div class="terminal-line"></div>
+                <div class="terminal-line terminal-line-mid"></div>
+                <div class="terminal-line"></div>
+                <div class="terminal-line terminal-line-short"></div>
+              </div>
+              <h3 data-i18n="previewCard3Title">Markdown output pipeline</h3>
+              <p data-i18n="previewCard3Text">
+                From extracting audio out of video to cleaning text and exporting Markdown, the whole flow stays local.
+              </p>
+            </article>
           </div>
         </section>
 
@@ -230,7 +334,56 @@
             >
           </div>
         </section>
+
+        <section class="section" id="faq">
+          <div class="section-heading">
+            <p class="eyebrow" data-i18n="faqEyebrow">FAQ</p>
+            <h2 data-i18n="faqTitle">Common questions before deployment</h2>
+          </div>
+          <div class="faq-list">
+            <article class="faq-item glass-card">
+              <h3 data-i18n="faq1Title">Does this project upload audio to the cloud?</h3>
+              <p data-i18n="faq1Text">
+                No. It is a local-first desktop app and it calls the Whisper-compatible runtime and FFmpeg available on your own machine.
+              </p>
+            </article>
+            <article class="faq-item glass-card">
+              <h3 data-i18n="faq2Title">How do I enable GitHub Pages?</h3>
+              <p data-i18n="faq2Text">
+                Open the repository Pages settings, choose `Deploy from a branch`, and point the source to `main / docs`.
+              </p>
+            </article>
+            <article class="faq-item glass-card">
+              <h3 data-i18n="faq3Title">Why show a reminder before model downloads?</h3>
+              <p data-i18n="faq3Text">
+                Model files are often large, so the reminder helps you confirm network access, disk space, and the destination folder first.
+              </p>
+            </article>
+            <article class="faq-item glass-card">
+              <h3 data-i18n="faq4Title">Can this Pages site be extended later?</h3>
+              <p data-i18n="faq4Text">
+                Yes. The current structure is already separated into HTML, CSS, and JS files, making it easy to add screenshots, a download page, or a changelog later.
+              </p>
+            </article>
+          </div>
+        </section>
       </main>
+
+      <footer class="site-footer">
+        <div class="footer-inner glass-card">
+          <div>
+            <strong>FreeType Whisper Studio</strong>
+            <p data-i18n="footerText">
+              A local-first Whisper desktop workspace for continuous dictation, video transcription, and Markdown capture.
+            </p>
+          </div>
+          <div class="footer-links">
+            <a href="https://github.com/QianYuan1437/FreeType-Whisper-Studio" target="_blank" rel="noreferrer" data-i18n="footerGithub">GitHub repository</a>
+            <a href="https://github.com/QianYuan1437/FreeType-Whisper-Studio/settings/pages" target="_blank" rel="noreferrer" data-i18n="footerPages">Pages settings</a>
+            <a href="#top" data-i18n="footerBackTop">Back to top</a>
+          </div>
+        </div>
+      </footer>
     </div>
 
     <script src="./script.js"></script>

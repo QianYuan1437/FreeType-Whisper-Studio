@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   color-scheme: light;
   --bg: #eef3ff;
   --bg-strong: #dfe8ff;
@@ -89,7 +89,9 @@ button {
 }
 
 .topbar,
-main {
+main,
+.site-footer,
+.footer-inner {
   width: min(calc(100% - 32px), var(--max-width));
   margin-inline: auto;
 }
@@ -144,6 +146,14 @@ main {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  color: var(--text-soft);
+  font-size: 0.95rem;
 }
 
 .pill-button {
@@ -215,8 +225,11 @@ h3 {
 
 .hero-text,
 .feature-card p,
+.download-card p,
 .timeline-item p,
+.preview-card p,
 .info-panel p,
+.faq-item p,
 .cta-card p {
   color: var(--text-soft);
   line-height: 1.72;
@@ -261,8 +274,11 @@ h3 {
 
 .metric,
 .feature-card,
+.download-card,
 .timeline-item,
+.preview-card,
 .info-panel,
+.faq-item,
 .cta-card,
 .hero-panel {
   padding: 22px;
@@ -407,16 +423,154 @@ h3 {
   margin-bottom: 28px;
 }
 
-.feature-grid {
+.feature-grid,
+.download-grid,
+.preview-grid,
+.faq-list,
+.timeline,
+.dual-panel {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 18px;
 }
 
-.timeline {
-  display: grid;
+.feature-grid {
   grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+}
+
+.download-grid,
+.preview-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.faq-list,
+.dual-panel {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.timeline {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.download-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  margin-bottom: 18px;
+  background: rgba(34, 107, 255, 0.12);
+  color: var(--primary-strong);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.download-card,
+.preview-card,
+.faq-item {
+  display: grid;
+  align-content: start;
+}
+
+.download-card .secondary-button {
+  margin-top: 10px;
+  width: fit-content;
+}
+
+.preview-window {
+  min-height: 220px;
+  margin-bottom: 18px;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04)),
+    rgba(8, 20, 41, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 18px;
+}
+
+.preview-topbar,
+.preview-sidebar,
+.preview-line,
+.preview-file,
+.terminal-line,
+.mini-chip {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.preview-topbar {
+  height: 14px;
+  width: 46%;
+  margin-bottom: 18px;
+}
+
+.preview-columns {
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 14px;
+}
+
+.preview-sidebar {
+  min-height: 138px;
+  border-radius: 22px;
+}
+
+.preview-content {
+  display: grid;
+  align-content: start;
+  gap: 12px;
+}
+
+.preview-line {
+  height: 18px;
+}
+
+.preview-line-wide {
+  width: 92%;
+}
+
+.preview-line-short {
+  width: 58%;
+}
+
+.preview-window-alt,
+.preview-window-terminal {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+}
+
+.preview-chip-row {
+  display: flex;
+  gap: 10px;
+}
+
+.mini-chip {
+  width: 68px;
+  height: 26px;
+}
+
+.preview-file {
+  height: 42px;
+}
+
+.preview-file-mid {
+  width: 80%;
+}
+
+.preview-file-short {
+  width: 56%;
+}
+
+.terminal-line {
+  height: 14px;
+}
+
+.terminal-line-mid {
+  width: 82%;
+}
+
+.terminal-line-short {
+  width: 48%;
 }
 
 .timeline-index {
@@ -432,12 +586,6 @@ h3 {
   font-weight: 700;
 }
 
-.dual-panel {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 18px;
-}
-
 .cta-card {
   text-align: center;
   padding: 34px 24px;
@@ -447,10 +595,40 @@ h3 {
   margin-top: 8px;
 }
 
+.site-footer {
+  padding-bottom: 42px;
+}
+
+.footer-inner {
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.footer-inner p {
+  margin: 8px 0 0;
+  color: var(--text-soft);
+}
+
+.footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.footer-links a {
+  color: var(--text-soft);
+}
+
 @media (max-width: 1080px) {
   .hero,
   .feature-grid,
+  .download-grid,
+  .preview-grid,
   .timeline,
+  .faq-list,
   .dual-panel {
     grid-template-columns: 1fr 1fr;
   }
@@ -479,9 +657,16 @@ h3 {
     justify-content: center;
   }
 
+  .nav-link {
+    display: none;
+  }
+
   .hero,
   .feature-grid,
+  .download-grid,
+  .preview-grid,
   .timeline,
+  .faq-list,
   .dual-panel {
     grid-template-columns: 1fr;
   }
@@ -500,10 +685,18 @@ h3 {
 
   .metric,
   .feature-card,
+  .download-card,
   .timeline-item,
+  .preview-card,
   .info-panel,
+  .faq-item,
   .cta-card,
   .hero-panel {
     padding: 20px;
+  }
+
+  .footer-inner {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
