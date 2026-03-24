@@ -732,6 +732,51 @@ class _SettingsCard extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(strings.t('runtimeHelp')),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(24),
+                color: Theme.of(context).colorScheme.surfaceContainerLow,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    strings.t('runtimeChecklist'),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    children: [
+                      _RuntimeStatusPill(
+                        label: strings.t('whisperPath'),
+                        ready: controller.whisperExecutable.isNotEmpty,
+                        strings: strings,
+                      ),
+                      _RuntimeStatusPill(
+                        label: strings.t('ffmpegPath'),
+                        ready: controller.ffmpegExecutable.isNotEmpty,
+                        strings: strings,
+                      ),
+                      _RuntimeStatusPill(
+                        label: strings.t('selectedModel'),
+                        ready: controller.selectedModelPath.isNotEmpty,
+                        strings: strings,
+                      ),
+                    ],
+                  ),
+                  if (controller.runtimeDiagnostics.isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Text(strings.t('lastRuntimeReport')),
+                    const SizedBox(height: 8),
+                    SelectableText(controller.runtimeDiagnostics),
+                  ],
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -1128,6 +1173,43 @@ class _InfoRow extends StatelessWidget {
         Expanded(child: Text(label)),
         SelectableText(value),
       ],
+    );
+  }
+}
+
+class _RuntimeStatusPill extends StatelessWidget {
+  const _RuntimeStatusPill({
+    required this.label,
+    required this.ready,
+    required this.strings,
+  });
+
+  final String label;
+  final bool ready;
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        color: ready
+            ? Theme.of(context).colorScheme.primaryContainer
+            : Theme.of(context).colorScheme.surfaceContainerHighest,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label),
+          const SizedBox(height: 4),
+          Text(
+            ready ? strings.t('configured') : strings.t('needsSetup'),
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ],
+      ),
     );
   }
 }
