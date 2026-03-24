@@ -251,6 +251,24 @@ class AppController extends ChangeNotifier {
     return null;
   }
 
+  Future<String?> openWhisperDownloadPage() async {
+    try {
+      await _tools.openWhisperDownloadPage();
+      return null;
+    } catch (_) {
+      return 'open-external-failed';
+    }
+  }
+
+  Future<String?> openFFmpegDownloadPage() async {
+    try {
+      await _tools.openFFmpegDownloadPage();
+      return null;
+    } catch (_) {
+      return 'open-external-failed';
+    }
+  }
+
   Future<String> runRuntimeDiagnostics() async {
     if (whisperExecutable.isEmpty) {
       return 'missing-config';

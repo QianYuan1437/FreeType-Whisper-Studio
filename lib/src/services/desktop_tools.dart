@@ -43,6 +43,14 @@ class DesktopTools {
     return _findExecutable(names, extraDirectories: _ffmpegCandidateDirectories());
   }
 
+  Future<void> openWhisperDownloadPage() {
+    return _openExternalUrl('https://github.com/ggml-org/whisper.cpp');
+  }
+
+  Future<void> openFFmpegDownloadPage() {
+    return _openExternalUrl('https://ffmpeg.org/download.html');
+  }
+
   Future<File> downloadModel({
     required WhisperModelInfo model,
     required String modelDirectory,
@@ -425,5 +433,23 @@ class DesktopTools {
     } catch (_) {
       return 'GPU detection: unable to query GPU adapters on Linux.';
     }
+  }
+
+  Future<void> _openExternalUrl(String url) async {
+    if (Platform.isWindows) {
+      final result = await Process.run('cmd', ['/c', 'start', '', url]);
+      if (result.exitCode != 0) {
+        throw ProcessException('cmd', ['/c', 'start', '', url], '${result.stderr}', result.exitCode);
+      }
+      return;
+    }
+    if (Platform.isLinux) {
+      final result = await Process.run('xdg-open', [url]);
+      if (result.exitCode != 0) {
+        throw ProcessException('xdg-open', [url], '${result.stderr}', result.exitCode);
+      }
+      return;
+    }
+    throw UnsupportedError('Opening external URLs is not supported on this platform.');
   }
 }

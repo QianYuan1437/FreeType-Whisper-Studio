@@ -631,6 +631,18 @@ class _SettingsCard extends StatelessWidget {
                   ),
                   child: Text(strings.t('guide')),
                 ),
+                OutlinedButton(
+                  onPressed: () async {
+                    final result = await controller.openWhisperDownloadPage();
+                    if (!context.mounted || result == null) {
+                      return;
+                    }
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(_mapError(strings, result))));
+                  },
+                  child: Text(strings.t('downloadGuide')),
+                ),
                 FilledButton(
                   onPressed: controller.isTestingRuntime
                       ? null
@@ -696,6 +708,18 @@ class _SettingsCard extends StatelessWidget {
                     body: strings.t('ffmpegGuideBody'),
                   ),
                   child: Text(strings.t('guide')),
+                ),
+                OutlinedButton(
+                  onPressed: () async {
+                    final result = await controller.openFFmpegDownloadPage();
+                    if (!context.mounted || result == null) {
+                      return;
+                    }
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text(_mapError(strings, result))));
+                  },
+                  child: Text(strings.t('downloadGuide')),
                 ),
               ],
             ),
@@ -1183,6 +1207,8 @@ String _mapError(AppStrings strings, String error) {
       return strings.t('whisperNotFound');
     case 'ffmpeg-not-found':
       return strings.t('ffmpegNotFound');
+    case 'open-external-failed':
+      return strings.t('openExternalFailed');
     case 'no-transcript-yet':
       return strings.t('noTranscriptYet');
     default:
