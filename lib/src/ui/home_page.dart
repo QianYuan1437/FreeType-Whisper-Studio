@@ -598,6 +598,58 @@ class _SettingsCard extends StatelessWidget {
               buttonLabel: 'File',
               onTap: controller.pickWhisperExecutable,
             ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.tonal(
+                  onPressed: controller.isBusy
+                      ? null
+                      : () async {
+                          final result = await controller.autoLocateWhisperExecutable();
+                          if (!context.mounted) {
+                            return;
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result == null
+                                    ? strings.t('whisperAutoLocated')
+                                    : _mapError(strings, result),
+                              ),
+                            ),
+                          );
+                        },
+                  child: Text(strings.t('autoLocate')),
+                ),
+                OutlinedButton(
+                  onPressed: () => _showGuideDialog(
+                    context,
+                    title: strings.t('whisperGuideTitle'),
+                    body: strings.t('whisperGuideBody'),
+                  ),
+                  child: Text(strings.t('guide')),
+                ),
+                FilledButton(
+                  onPressed: controller.isTestingRuntime
+                      ? null
+                      : () async {
+                          final report = await controller.runRuntimeDiagnostics();
+                          if (!context.mounted) {
+                            return;
+                          }
+                          await _showReportDialog(
+                            context,
+                            title: strings.t('runtimeReport'),
+                            hint: strings.t('runtimeReportHint'),
+                            report: _mapError(strings, report),
+                          );
+                        },
+                  child: Text(strings.t('testRuntime')),
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             _EditableField(
               label: strings.t('whisperArgs'),
@@ -611,6 +663,41 @@ class _SettingsCard extends StatelessWidget {
               value: controller.ffmpegExecutable,
               buttonLabel: 'File',
               onTap: controller.pickFFmpegExecutable,
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                FilledButton.tonal(
+                  onPressed: controller.isBusy
+                      ? null
+                      : () async {
+                          final result = await controller.autoLocateFFmpegExecutable();
+                          if (!context.mounted) {
+                            return;
+                          }
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result == null
+                                    ? strings.t('ffmpegAutoLocated')
+                                    : _mapError(strings, result),
+                              ),
+                            ),
+                          );
+                        },
+                  child: Text(strings.t('autoLocate')),
+                ),
+                OutlinedButton(
+                  onPressed: () => _showGuideDialog(
+                    context,
+                    title: strings.t('ffmpegGuideTitle'),
+                    body: strings.t('ffmpegGuideBody'),
+                  ),
+                  child: Text(strings.t('guide')),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             _PathRow(
@@ -717,14 +804,6 @@ class _ModelsCard extends StatelessWidget {
               ),
               const SizedBox(height: 10),
             ],
-            if (controller.downloadProgress > 0 &&
-                controller.downloadProgress < 1)
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: LinearProgressIndicator(
-                  value: controller.downloadProgress,
-                ),
-              ),
           ],
         ),
       ),
@@ -747,6 +826,8 @@ class _ModelRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final progress = controller.progressForModel(model.id);
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -760,7 +841,7 @@ class _ModelRow extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${model.label} · ${model.sizeMb} MB',
+                  '${model.label} - ${model.sizeMb} MB',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -772,6 +853,9 @@ class _ModelRow extends StatelessWidget {
                             await showDialog<bool>(
                               context: context,
                               builder: (context) => AlertDialog(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(28),
+                                ),
                                 title: Text(strings.t('download')),
                                 content: Text(strings.t('downloadReminder')),
                                 actions: [
@@ -801,7 +885,11 @@ class _ModelRow extends StatelessWidget {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(message ?? strings.t('modelSaved')),
+                              content: Text(
+                                message == null
+                                    ? strings.t('modelSaved')
+                                    : _mapError(strings, message),
+                              ),
                             ),
                           );
                         }
@@ -812,6 +900,18 @@ class _ModelRow extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(model.multilingual ? 'Multilingual' : 'English only'),
+          if (progress > 0 && progress < 1) ...[
+            const SizedBox(height: 12),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(999),
+              child: LinearProgressIndicator(value: progress, minHeight: 8),
+            ),
+            const SizedBox(height: 6),
+            Text('${strings.t('downloadProgress')}: ${(progress * 100).round()}%'),
+          ] else if (progress >= 1) ...[
+            const SizedBox(height: 10),
+            Text(strings.t('modelSaved')),
+          ],
         ],
       ),
     );
@@ -1008,6 +1108,67 @@ class _InfoRow extends StatelessWidget {
   }
 }
 
+
+Future<void> _showGuideDialog(
+  BuildContext context, {
+  required String title,
+  required String body,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      title: Text(title),
+      content: Text(body),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _showReportDialog(
+  BuildContext context, {
+  required String title,
+  required String hint,
+  required String report,
+}) async {
+  await showDialog<void>(
+    context: context,
+    builder: (context) => AlertDialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+      ),
+      title: Text(title),
+      content: SizedBox(
+        width: 560,
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(hint),
+              const SizedBox(height: 12),
+              SelectableText(report),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        FilledButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(MaterialLocalizations.of(context).okButtonLabel),
+        ),
+      ],
+    ),
+  );
+}
+
 String _mapError(AppStrings strings, String error) {
   switch (error) {
     case 'missing-config':
@@ -1018,6 +1179,10 @@ String _mapError(AppStrings strings, String error) {
       return strings.t('missingModel');
     case 'missing-microphone-permission':
       return strings.t('microphonePermission');
+    case 'whisper-not-found':
+      return strings.t('whisperNotFound');
+    case 'ffmpeg-not-found':
+      return strings.t('ffmpegNotFound');
     case 'no-transcript-yet':
       return strings.t('noTranscriptYet');
     default:

@@ -31,6 +31,18 @@ class DesktopTools {
       ..sort();
   }
 
+  Future<String?> autoLocateWhisperExecutable() {
+    final names = Platform.isWindows
+        ? ['whisper-cli.exe', 'whisper.exe', 'main.exe']
+        : ['whisper-cli', 'whisper', 'main'];
+    return _findExecutable(names, extraDirectories: _whisperCandidateDirectories());
+  }
+
+  Future<String?> autoLocateFFmpegExecutable() {
+    final names = Platform.isWindows ? ['ffmpeg.exe'] : ['ffmpeg'];
+    return _findExecutable(names, extraDirectories: _ffmpegCandidateDirectories());
+  }
+
   Future<File> downloadModel({
     required WhisperModelInfo model,
     required String modelDirectory,
@@ -163,6 +175,32 @@ class DesktopTools {
     return '${result.stdout}';
   }
 
+  Future<String> testComputeRuntime({
+    required String whisperPath,
+    String? modelPath,
+  }) async {
+    final helpOutput = await _readWhisperHelp(whisperPath);
+    final lower = helpOutput.toLowerCase();
+    final backendHints = <String>[];
+    for (final backend in ['cuda', 'vulkan', 'opencl', 'metal', 'coreml']) {
+      if (lower.contains(backend)) {
+        backendHints.add(backend.toUpperCase());
+      }
+    }
+
+    final lines = <String>[
+      'Whisper executable: ${p.basename(whisperPath)}',
+      'CPU: available (${Platform.numberOfProcessors} logical processors detected)',
+      if (modelPath != null && modelPath.isNotEmpty && File(modelPath).existsSync())
+        'Model: ${p.basename(modelPath)}',
+      backendHints.isEmpty
+          ? 'Whisper runtime hints: no explicit GPU backend keywords were found in the help output.'
+          : 'Whisper runtime hints: ${backendHints.join(', ')} support keywords detected.',
+      await _platformHardwareSummary(),
+    ];
+    return lines.join('\n');
+  }
+
   Future<File> saveMarkdown({
     required String outputPath,
     required String content,
@@ -256,5 +294,136 @@ class DesktopTools {
       args.add(buffer.toString());
     }
     return args;
+  }
+
+  Future<String?> _findExecutable(
+    List<String> names, {
+    List<String> extraDirectories = const [],
+  }) async {
+    final pathSeparator = Platform.isWindows ? ';' : ':';
+    final searchedDirs = <String>{
+      ...extraDirectories.where((value) => value.isNotEmpty),
+      ...(Platform.environment['PATH'] ?? '').split(pathSeparator).where((value) => value.isNotEmpty),
+    };
+
+    for (final dir in searchedDirs) {
+      for (final name in names) {
+        final candidate = File(p.join(dir, name));
+        if (candidate.existsSync()) {
+          return candidate.path;
+        }
+      }
+    }
+
+    final command = Platform.isWindows ? 'where' : 'which';
+    for (final name in names) {
+      try {
+        final result = await Process.run(command, [name]);
+        if (result.exitCode == 0) {
+          final output = '${result.stdout}'.trim().split(RegExp(r'[\r\n]+')).firstWhere(
+            (line) => line.trim().isNotEmpty,
+            orElse: () => '',
+          );
+          if (output.isNotEmpty) {
+            return output.trim();
+          }
+        }
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  List<String> _whisperCandidateDirectories() {
+    if (Platform.isWindows) {
+      return const [
+        'C:\\whisper',
+        'C:\\whisper.cpp',
+        'D:\\whisper',
+        'D:\\whisper.cpp',
+      ];
+    }
+    return const ['/usr/local/bin', '/usr/bin', '/opt/homebrew/bin'];
+  }
+
+  List<String> _ffmpegCandidateDirectories() {
+    if (Platform.isWindows) {
+      return const [
+        'C:\\ffmpeg\\bin',
+        'D:\\ffmpeg\\bin',
+        'D:\\ffmpeg-8.0.1\\bin',
+        'C:\\Program Files\\ffmpeg\\bin',
+      ];
+    }
+    return const ['/usr/local/bin', '/usr/bin', '/snap/bin'];
+  }
+
+  Future<String> _readWhisperHelp(String whisperPath) async {
+    for (final args in const [
+      ['-h'],
+      ['--help'],
+      ['-hh'],
+    ]) {
+      try {
+        final result = await Process.run(whisperPath, args);
+        final output = '${result.stdout}\n${result.stderr}'.trim();
+        if (output.isNotEmpty) {
+          return output;
+        }
+      } catch (_) {}
+    }
+    return 'Help output not available.';
+  }
+
+  Future<String> _platformHardwareSummary() async {
+    if (Platform.isWindows) {
+      return _windowsHardwareSummary();
+    }
+    if (Platform.isLinux) {
+      return _linuxHardwareSummary();
+    }
+    return 'GPU detection: unsupported on this platform.';
+  }
+
+  Future<String> _windowsHardwareSummary() async {
+    try {
+      final result = await Process.run('powershell', [
+        '-NoProfile',
+        '-Command',
+        'Get-CimInstance Win32_VideoController | Select-Object -ExpandProperty Name'
+      ]);
+      final lines = '${result.stdout}'
+          .split(RegExp(r'[\r\n]+'))
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty)
+          .toList();
+      if (lines.isEmpty) {
+        return 'GPU detection: no GPU adapter names were returned by Windows.';
+      }
+      return 'GPU detection: ${lines.join(', ')}';
+    } catch (_) {
+      return 'GPU detection: unable to query GPU adapters on Windows.';
+    }
+  }
+
+  Future<String> _linuxHardwareSummary() async {
+    try {
+      final result = await Process.run('/bin/sh', [
+        '-lc',
+        'if command -v nvidia-smi >/dev/null 2>&1; then nvidia-smi --query-gpu=name --format=csv,noheader; '
+            'elif command -v lspci >/dev/null 2>&1; then lspci | grep -i "vga\\|3d\\|display"; '
+            'else echo "No GPU probe command found"; fi'
+      ]);
+      final lines = '${result.stdout}'
+          .split(RegExp(r'[\r\n]+'))
+          .map((line) => line.trim())
+          .where((line) => line.isNotEmpty)
+          .toList();
+      if (lines.isEmpty) {
+        return 'GPU detection: no GPU adapter names were returned by Linux tools.';
+      }
+      return 'GPU detection: ${lines.join(', ')}';
+    } catch (_) {
+      return 'GPU detection: unable to query GPU adapters on Linux.';
+    }
   }
 }

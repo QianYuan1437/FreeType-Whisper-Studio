@@ -62,6 +62,25 @@ class AppStrings {
       'emptyNotes': 'Generated Markdown notes will appear here.',
       'runtimeHelp':
           'Tip: point Whisper to a whisper.cpp or similar local CLI build that already supports your GPU backend.',
+      'autoLocate': 'Auto locate',
+      'guide': 'Guide',
+      'testRuntime': 'Test CPU/GPU',
+      'runtimeReport': 'Runtime check',
+      'runtimeReportHint':
+          'This checks the configured Whisper binary, local CPU information, and detectable GPU adapters.',
+      'whisperGuideTitle': 'How to configure Whisper',
+      'whisperGuideBody':
+          '1. Prepare a Whisper-compatible CLI such as whisper.cpp.\n2. If you want GPU acceleration, use a build that already includes CUDA, Vulkan, or another backend.\n3. Click Auto locate first, or choose the executable manually.\n4. Select a local model file before starting dictation.',
+      'ffmpegGuideTitle': 'How to configure FFmpeg',
+      'ffmpegGuideBody':
+          '1. Install FFmpeg or keep a portable build locally.\n2. Click Auto locate first, or choose the ffmpeg executable manually.\n3. The app uses FFmpeg to extract audio from imported videos before transcription.',
+      'whisperAutoLocated': 'Whisper executable located and saved.',
+      'ffmpegAutoLocated': 'FFmpeg executable located and saved.',
+      'whisperNotFound':
+          'No Whisper executable was found automatically. You can choose the file manually or open the guide.',
+      'ffmpegNotFound':
+          'No FFmpeg executable was found automatically. You can choose the file manually or open the guide.',
+      'downloadProgress': 'Download progress',
       'dictationLanguage': 'Dictation language',
       'latency': 'Latency profile',
       'autoDetect': 'Auto',

@@ -45,6 +45,10 @@ class AppController extends ChangeNotifier {
   bool copySnippetEnabled = false;
   bool globalHotkeysEnabled = true;
   double downloadProgress = 0;
+  final Map<String, double> modelDownloadProgress = {};
+  String activeModelDownloadId = '';
+  bool isTestingRuntime = false;
+  String runtimeDiagnostics = '';
   String pendingPasteBuffer = '';
 
   Future<void> initialize() async {
@@ -126,6 +130,14 @@ class AppController extends ChangeNotifier {
     whisperExtraArgs = value;
     unawaited(_persist());
     notifyListeners();
+  }
+
+  double progressForModel(String modelId) {
+    return modelDownloadProgress[modelId] ?? 0;
+  }
+
+  bool isDownloadingModel(String modelId) {
+    return activeModelDownloadId == modelId && isBusy;
   }
 
   void setAutoPasteEnabled(bool value) {
@@ -217,6 +229,49 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<String?> autoLocateWhisperExecutable() async {
+    final path = await _tools.autoLocateWhisperExecutable();
+    if (path == null) {
+      return 'whisper-not-found';
+    }
+    whisperExecutable = path;
+    await _persist();
+    notifyListeners();
+    return null;
+  }
+
+  Future<String?> autoLocateFFmpegExecutable() async {
+    final path = await _tools.autoLocateFFmpegExecutable();
+    if (path == null) {
+      return 'ffmpeg-not-found';
+    }
+    ffmpegExecutable = path;
+    await _persist();
+    notifyListeners();
+    return null;
+  }
+
+  Future<String> runRuntimeDiagnostics() async {
+    if (whisperExecutable.isEmpty) {
+      return 'missing-config';
+    }
+    isTestingRuntime = true;
+    notifyListeners();
+    try {
+      runtimeDiagnostics = await _tools.testComputeRuntime(
+        whisperPath: whisperExecutable,
+        modelPath: selectedModelPath.isEmpty ? null : selectedModelPath,
+      );
+      return runtimeDiagnostics;
+    } catch (error) {
+      runtimeDiagnostics = '$error';
+      return runtimeDiagnostics;
+    } finally {
+      isTestingRuntime = false;
+      notifyListeners();
+    }
+  }
+
   void selectModelPath(String value) {
     selectedModelPath = value;
     unawaited(_persist());
@@ -228,7 +283,9 @@ class AppController extends ChangeNotifier {
       return 'Please configure the model directory first.';
     }
     isBusy = true;
+    activeModelDownloadId = model.id;
     downloadProgress = 0;
+    modelDownloadProgress[model.id] = 0;
     status = 'downloading';
     notifyListeners();
     try {
@@ -237,14 +294,19 @@ class AppController extends ChangeNotifier {
         modelDirectory: modelDirectory,
         onProgress: (progress) {
           downloadProgress = progress;
+          modelDownloadProgress[model.id] = progress;
           notifyListeners();
         },
       );
       selectedModelPath = file.path;
+      modelDownloadProgress[model.id] = 1;
+      activeModelDownloadId = '';
       status = 'ready';
       await _persist();
       return null;
     } catch (error) {
+      modelDownloadProgress.remove(model.id);
+      activeModelDownloadId = '';
       status = '$error';
       return '$error';
     } finally {
