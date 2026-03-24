@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FreeType Whisper Studio
+Comment=Local-first Whisper desktop workspace
+Exec=@PACKAGE_EXECUTABLE_PATH@
+Icon=freetype-whisper-studio
+Terminal=false
+Type=Application
+Categories=Utility;AudioVideo;Office;
+StartupNotify=true

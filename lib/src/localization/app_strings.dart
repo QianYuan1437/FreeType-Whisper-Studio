@@ -88,6 +88,11 @@ class AppStrings {
       'configured': 'Configured',
       'needsSetup': 'Needs setup',
       'lastRuntimeReport': 'Latest runtime report',
+      'runtimePlatforms': 'Platform tips',
+      'runtimeWindowsTip':
+          'Windows: keep a GPU-enabled whisper.cpp build and FFmpeg in stable folders such as D:\\whisper.cpp and D:\\ffmpeg\\bin.',
+      'runtimeLinuxTip':
+          'Linux: use a native Whisper/FFmpeg install or portable binaries, then verify access with the CPU/GPU test button.',
       'dictationLanguage': 'Dictation language',
       'latency': 'Latency profile',
       'autoDetect': 'Auto',
@@ -186,6 +191,9 @@ class AppStrings {
       'configured': '\u5df2\u914d\u7f6e',
       'needsSetup': '\u5f85\u914d\u7f6e',
       'lastRuntimeReport': '\u6700\u65b0\u8fd0\u884c\u65f6\u62a5\u544a',
+      'runtimePlatforms': '\u5e73\u53f0\u63d0\u793a',
+      'runtimeWindowsTip': 'Windows\uff1a\u5efa\u8bae\u628a\u5df2\u542f\u7528 GPU \u7684 whisper.cpp \u6784\u5efa\u548c FFmpeg \u653e\u5728\u7a33\u5b9a\u76ee\u5f55\uff0c\u4f8b\u5982 D:\\whisper.cpp \u548c D:\\ffmpeg\\bin\u3002',
+      'runtimeLinuxTip': 'Linux\uff1a\u53ef\u4f7f\u7528\u672c\u5730\u5b89\u88c5\u7684 Whisper/FFmpeg \u6216\u4fbf\u643a\u4e8c\u8fdb\u5236\uff0c\u7136\u540e\u7528 CPU/GPU \u68c0\u6d4b\u6309\u94ae\u786e\u8ba4\u73af\u5883\u53ef\u7528\u3002',
       'dictationLanguage': '听写语言',
       'latency': '延迟档位',
       'autoDetect': '自动',

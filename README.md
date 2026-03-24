@@ -1,46 +1,96 @@
 # FreeType Whisper Studio
 
-FreeType Whisper Studio is a Flutter desktop app for Windows and Linux that turns local speech into text with a Whisper-compatible runtime on your own machine.
+FreeType Whisper Studio is a local-first Flutter desktop app for Windows and Linux. It uses your own Whisper-compatible runtime and FFmpeg binaries to turn speech or video audio into text and Markdown notes without sending audio to a cloud service.
 
-## Features
+## Highlights
 
-- Rounded modern desktop UI
-- Chinese and English interface
+- Rounded desktop UI with Chinese and English support
 - Light, dark, and system theme modes
-- Live dictation workflow for microphone input
-- Local model library with size filtering
-- Built-in reminder before downloading Whisper models
-- Configurable model storage directory
-- Video import with audio extraction through FFmpeg
-- Markdown transcript export
+- Continuous live dictation with incremental, sentence-final, and whole-transcript paste modes
+- Global hotkeys for dictation toggle and paste
+- Local Whisper model library with size filters and download reminders
+- Whisper runtime tuning with extra CLI arguments
+- Guided Whisper and FFmpeg setup with auto-locate, download shortcuts, and CPU/GPU runtime checks
+- Video import, FFmpeg audio extraction, local transcription, and Markdown export
+- Windows build, Linux bundle, `.deb`, and `.rpm` packaging
 
-## Runtime Design
+## Runtime Model
 
-The Flutter app does not send audio to any cloud service.
-
-It calls local command-line tools that you configure:
+The app is only a local desktop shell. You provide:
 
 - A local Whisper-compatible executable
-  Suggested: a GPU-enabled `whisper.cpp` build for Windows or Linux
-- A local `ffmpeg` executable for video audio extraction
+  Recommended: a GPU-enabled `whisper.cpp` build
+- A local `ffmpeg` executable
 - A local Whisper model file such as `ggml-small.bin`
+
+The app then orchestrates setup, recording, model downloads, dictation, transcription, and export on your machine.
+
+## Dependencies
+
+### Runtime dependencies
+
+- Whisper-compatible CLI
+  Suggested: [`whisper.cpp`](https://github.com/ggml-org/whisper.cpp)
+- FFmpeg
+  Suggested: [ffmpeg.org](https://ffmpeg.org/download.html)
+- A local Whisper model file
+
+### Flutter dependencies
+
+Main packages used by the app:
+
+- `file_picker`
+- `hotkey_manager`
+- `path_provider`
+- `record`
+- `shared_preferences`
+
+### Linux packaging dependencies
+
+Used during Linux packaging and verification:
+
+- `cpack`
+- `dpkg-deb`
+- `rpm` / `rpmbuild`
+- `keybinder-3.0`
+
+## Supported Environments
+
+### Application targets
+
+- Windows desktop
+- Linux desktop
+
+### Verified build environments
+
+- Windows with Flutter desktop toolchain
+- WSL2 Ubuntu 24.04 for Linux builds and package generation
+
+### Runtime compatibility notes
+
+- GPU acceleration depends on the Whisper binary you choose.
+- The app can detect likely backend hints such as CUDA, Vulkan, OpenCL, Metal, or CoreML only if they appear in the runtime help output.
+- On Linux, auto paste requires `xdotool`.
 
 ## Quick Start
 
-1. Open the app.
-2. Set the Whisper executable path.
-3. Set the FFmpeg executable path.
+1. Launch the app.
+2. Configure the Whisper executable path.
+3. Configure the FFmpeg executable path.
 4. Choose a model directory.
-5. Download a model from the built-in model list, or place an existing model in the model directory and select it.
-6. Start live dictation or import a video file.
+5. Download a model from the built-in library or place an existing model in the model directory.
+6. Select the model file in the app.
+7. Run the CPU/GPU runtime test if you want to verify the current backend.
+8. Start live dictation or import a video.
 
-## Model Download Reminder
+## Packaging Outputs
 
-When you click download inside the app, the UI shows a confirmation reminder before fetching the model so you can check network access and disk space first.
+Release artifacts produced locally for `v1.0.0`:
 
-## GPU Notes
-
-GPU acceleration depends on the Whisper runtime you choose. The app itself is a local desktop shell and will use whatever backend your local Whisper executable already supports, such as Vulkan, CUDA, or OpenCL in a compatible build.
+- Windows executable: `build/windows/x64/runner/Release/freetype.exe`
+- Linux bundle executable: `build/linux/x64/release/bundle/opt/freetype/freetype`
+- Linux Debian package: `build/linux/x64/release/freetype-whisper-studio_1.0.0_amd64.deb`
+- Linux RPM package: `build/linux/x64/release/freetype-whisper-studio-1.0.0-1.x86_64.rpm`
 
 ## Local Verification
 
@@ -49,8 +99,9 @@ Verified locally on this machine:
 - `flutter analyze`
 - `flutter test`
 - `flutter build windows`
-
-Linux desktop files were generated and the app code targets Linux, but Linux build verification was not run in this Windows environment.
+- `flutter build linux`
+- `cpack -G DEB`
+- `cpack -G RPM`
 
 ## License
 

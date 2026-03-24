@@ -24,3 +24,11 @@ target_link_libraries(${BINARY_NAME} PRIVATE flutter)
 target_link_libraries(${BINARY_NAME} PRIVATE PkgConfig::GTK)
 
 target_include_directories(${BINARY_NAME} PRIVATE "${CMAKE_SOURCE_DIR}")
+
+set(PACKAGE_EXECUTABLE_PATH "/opt/freetype/freetype")
+
+configure_file(
+  "${CMAKE_CURRENT_SOURCE_DIR}/resources/freetype-whisper-studio.desktop.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/freetype-whisper-studio.desktop"
+  @ONLY
+)
